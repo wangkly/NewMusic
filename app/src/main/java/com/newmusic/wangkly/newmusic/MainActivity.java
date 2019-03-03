@@ -90,39 +90,41 @@ public class MainActivity extends AppCompatActivity
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
 
-//        List<String> titles = new ArrayList<>();
-//        titles.add("本地");
-//        titles.add("网络");
+        List<String> titles = new ArrayList<>();
+        titles.add("本地");
+        titles.add("网络");
 //        tabLayout.addTab(tabLayout.newTab().setText("本地"));
 //        tabLayout.addTab(tabLayout.newTab().setText("网络"));
 
 
 
 
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                Log.i("tablayout","onTabSelected:"+tab.getText());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
+//        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+//            @Override
+//            public void onTabSelected(TabLayout.Tab tab) {
+//                Log.i("tablayout","onTabSelected:"+tab.getText());
+//            }
+//
+//            @Override
+//            public void onTabUnselected(TabLayout.Tab tab) {
+//
+//            }
+//
+//            @Override
+//            public void onTabReselected(TabLayout.Tab tab) {
+//
+//            }
+//        });
 
 
         fragmentManager= getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        fadapter = new MyFragmentPageAdapter(fragmentManager,fragments);
+        fadapter = new MyFragmentPageAdapter(fragmentManager,fragments,titles);
         viewPager.setAdapter(fadapter);
         viewPager.setCurrentItem(0);
+
+        tabLayout.setupWithViewPager(viewPager);
 
 //        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
@@ -160,7 +162,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        tabLayout.setupWithViewPager(viewPager);
+
     }
 
     @Override

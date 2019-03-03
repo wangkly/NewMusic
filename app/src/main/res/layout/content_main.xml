@@ -20,18 +20,18 @@
         app:layout_constraintTop_toTopOf="parent">
 
 
-        <android.support.design.widget.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="个性推荐"
-            android:icon="@drawable/list"
-            />
-        <android.support.design.widget.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="歌单"
-            android:icon="@drawable/music"
-            />
+        <!--<android.support.design.widget.TabItem-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="个性推荐"-->
+            <!--android:icon="@drawable/list"-->
+            <!--/>-->
+        <!--<android.support.design.widget.TabItem-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="歌单"-->
+            <!--android:icon="@drawable/music"-->
+            <!--/>-->
 
     </android.support.design.widget.TabLayout>
 

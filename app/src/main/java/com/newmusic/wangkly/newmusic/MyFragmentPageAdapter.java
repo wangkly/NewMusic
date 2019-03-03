@@ -10,21 +10,21 @@ import java.util.List;
 
 public class MyFragmentPageAdapter extends FragmentPagerAdapter {
 
-//    List<String> tabTiltles;
+    List<String> tabTiltles;
 
     List<Fragment> listfragment;
 
     FragmentManager fragmentManager ;
 
 
-    public MyFragmentPageAdapter(FragmentManager fm,List<Fragment> fragments) {
+    public MyFragmentPageAdapter(FragmentManager fm,List<Fragment> fragments,List<String> titles) {
         super(fm);
 
         fragmentManager = fm;
 
         listfragment = fragments;
 
-//        tabTiltles =titles;
+        tabTiltles =titles;
 
     }
 
@@ -39,10 +39,10 @@ public class MyFragmentPageAdapter extends FragmentPagerAdapter {
     }
 
 
-//    @Nullable
-//    @Override
-//    public CharSequence getPageTitle(int position) {
-//
-//        return tabTiltles.get(position);
-//    }
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position) {
+
+        return tabTiltles.get(position);
+    }
 }
