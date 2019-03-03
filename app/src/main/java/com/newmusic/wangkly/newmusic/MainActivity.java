@@ -14,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -89,20 +90,41 @@ public class MainActivity extends AppCompatActivity
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
 
-        List<String> titles = new ArrayList<>();
-        titles.add("本地");
-        titles.add("网络");
+//        List<String> titles = new ArrayList<>();
+//        titles.add("本地");
+//        titles.add("网络");
+//        tabLayout.addTab(tabLayout.newTab().setText("本地"));
+//        tabLayout.addTab(tabLayout.newTab().setText("网络"));
 
+
+
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                Log.i("tablayout","onTabSelected:"+tab.getText());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
 
         fragmentManager= getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        fadapter = new MyFragmentPageAdapter(fragmentManager,fragments,titles);
+        fadapter = new MyFragmentPageAdapter(fragmentManager,fragments);
         viewPager.setAdapter(fadapter);
         viewPager.setCurrentItem(0);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+//        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
 //        final LinearLayout miniTop = findViewById(R.id.miniTop);
 //        final ImageButton backMini = findViewById(R.id.backMini);
@@ -138,7 +160,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
+        tabLayout.setupWithViewPager(viewPager);
     }
 
     @Override
