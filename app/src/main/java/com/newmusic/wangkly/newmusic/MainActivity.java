@@ -2,31 +2,53 @@ package com.newmusic.wangkly.newmusic;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.view.MotionEvent;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    ViewPager viewPager;
+
+    TabLayout tabLayout;
+
+    FragmentManager fragmentManager;
+
+
+    MyFragmentPageAdapter fadapter;
+
+    Boolean isPlayingOnTop = false;
+
+    FrameLayout frame ;
+
+
+    PlayListFragment playListFragment;
+    OnlinePlayListFragment onlinePlayListFragment;
+    PlayingFragment playingFragment;
+    PlayingFullscreenFragment fullscreenFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,62 +75,85 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        ViewPager viewPager = findViewById(R.id.viewPager);
-
         List<Fragment> fragments = new ArrayList<>();
+        viewPager= findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        frame = findViewById(R.id.frame);
 
-        PlayListFragment playListFragment = new PlayListFragment();
+         playListFragment = new PlayListFragment();
+         onlinePlayListFragment = new OnlinePlayListFragment();
+         playingFragment = new PlayingFragment();
+         fullscreenFragment = new PlayingFullscreenFragment();
 
-        OnlinePlayListFragment onlinePlayListFragment = new OnlinePlayListFragment();
 
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<String> titles = new ArrayList<>();
+        titles.add("本地");
+        titles.add("网络");
 
-        MyFragmentPageAdapter fadapter = new MyFragmentPageAdapter(fragmentManager,fragments);
 
+
+        fragmentManager= getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        fadapter = new MyFragmentPageAdapter(fragmentManager,fragments,titles);
         viewPager.setAdapter(fadapter);
-
         viewPager.setCurrentItem(0);
+        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+//        final LinearLayout miniTop = findViewById(R.id.miniTop);
+//        final ImageButton backMini = findViewById(R.id.backMini);
+
+//        backMini.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
+//                layoutParams.height =50;
+//                frame.setLayoutParams(layoutParams);
+//
+////                miniTop.setVisibility(View.GONE);
+//            }
+//        });
 
 
-        final View frame2 = findViewById(R.id.frame2);
 
-        frame2.setOnTouchListener(new View.OnTouchListener() {
+        fragmentTransaction.add(R.id.frame,playingFragment);
+        fragmentTransaction.commit();
+
+        frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                ViewGroup.LayoutParams layoutParams = frame2.getLayoutParams();
-
+                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
                 layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
-
-                frame2.setLayoutParams(layoutParams);
-
-
+                frame.setLayoutParams(layoutParams);
+                isPlayingOnTop =true;
+//                FragmentTransaction ft= fragmentManager.beginTransaction();
+//                ft.replace(R.id.frame,fullscreenFragment);
+//                ft.commit();
                 return false;
 
             }
         });
 
 
-        PlayingFragment playingFragment = new PlayingFragment();
-
-
-        FragmentTransaction fragmentTransaction= fragmentManager.beginTransaction();
-
-        fragmentTransaction.add(R.id.frame2,playingFragment);
-
-        fragmentTransaction.commit();
-
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        }else if(isPlayingOnTop){
+            ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
+            layoutParams.height =50;
+            frame.setLayoutParams(layoutParams);
+            isPlayingOnTop =false;
+//            FragmentTransaction ft= fragmentManager.beginTransaction();
+//            ft.replace(R.id.frame,playingFragment);
+//            ft.commit();
         } else {
             super.onBackPressed();
         }
