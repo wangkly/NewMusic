@@ -84,8 +84,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            playingFragment.updateProgress(msg.what);
         }
     };
+
+
+    public void seekTo(int progress){
+        myBinder.updateProgress(progress);
+    }
 
 
     @Override
@@ -164,6 +170,9 @@ public class MainActivity extends AppCompatActivity
                 layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
                 frame.setLayoutParams(layoutParams);
                 isPlayingOnTop =true;
+
+                playingFragment.hideMiniShowFull();
+
 //                FragmentTransaction ft= fragmentManager.beginTransaction();
 //                ft.replace(R.id.frame,fullscreenFragment);
 //                ft.commit();
@@ -200,8 +209,9 @@ public class MainActivity extends AppCompatActivity
     public void play(String uri,String albumArt,String title,int duration){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
+        myBinder.UpdateSeekBarUi(handler);
         playingFragment.setPlayingInfo(albumArt,title);
-//        fullscreenFragment.initProps(title,duration,albumArt);
+        playingFragment.initFullScreenProps(title,duration,albumArt);
     }
 
 
@@ -226,6 +236,9 @@ public class MainActivity extends AppCompatActivity
 
             frame.setLayoutParams(layoutParams);
             isPlayingOnTop =false;
+
+            playingFragment.hideFullShowMini();
+
 //            FragmentTransaction ft= fragmentManager.beginTransaction();
 //            ft.replace(R.id.frame,playingFragment);
 //            ft.commit();

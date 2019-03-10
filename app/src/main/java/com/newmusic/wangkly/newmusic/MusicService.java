@@ -89,6 +89,14 @@ public class MusicService extends Service {
         }
 
 
+        public void updateProgress(int progress){
+            if(mediaPlayer.isPlaying()){
+                mediaPlayer.seekTo(progress);
+            }
+
+        }
+
+
         public void unbindCallback(){
             Log.i("MyService", "unbindCallback: timer cancel ");
             timer.cancel();

@@ -46,10 +46,10 @@ public class CircleImageView extends AppCompatImageView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         width = getMeasuredWidth();
         height = getMeasuredHeight();
         radius = Math.min(width,height)/2;
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
     }
 
@@ -57,7 +57,7 @@ public class CircleImageView extends AppCompatImageView {
     protected void onDraw(Canvas canvas) {
         paint.setShader(initBitmapShader());//将着色器设置给画笔
         canvas.drawCircle(width / 2, height / 2, radius, paint);//使用画笔在画布上画圆
-        drawCircleBorder(canvas,20, Color.BLACK,radius+5);
+//        drawCircleBorder(canvas,20, Color.BLACK,radius+5);
     }
 
 
