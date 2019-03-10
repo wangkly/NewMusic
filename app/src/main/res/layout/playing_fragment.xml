@@ -1,16 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/playing_mini"
     android:background="@drawable/border"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <TextView
+    <LinearLayout
+        android:id="@+id/mini_win"
+        android:visibility="visible"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="playing_fragment"/>
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/mini_img"
+            android:layout_width="50dp"
+            android:layout_height="50dp" />
+
+        <TextView
+            android:id="@+id/mini_playing_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="playing_fragment"/>
+
+        <ImageButton
+            android:id="@+id/mini_playing_btn"
+            android:src="@drawable/play"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@android:color/transparent"/>
+    </LinearLayout>
 
 
-</LinearLayout>
+
+
+
+
+
+
+
+</android.support.constraint.ConstraintLayout>
