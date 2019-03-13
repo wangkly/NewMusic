@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity
 
     TabLayout tabLayout;
 
+    Toolbar toolbar;
+
     FragmentManager fragmentManager;
 
 
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 //        FloatingActionButton fab =  findViewById(R.id.fab);
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity
                 isPlayingOnTop =true;
 
                 playingFragment.hideMiniShowFull();
-
+                toolbar.setVisibility(View.GONE);
 //                FragmentTransaction ft= fragmentManager.beginTransaction();
 //                ft.replace(R.id.frame,fullscreenFragment);
 //                ft.commit();
@@ -238,7 +240,7 @@ public class MainActivity extends AppCompatActivity
             isPlayingOnTop =false;
 
             playingFragment.hideFullShowMini();
-
+            toolbar.setVisibility(View.VISIBLE);
 //            FragmentTransaction ft= fragmentManager.beginTransaction();
 //            ft.replace(R.id.frame,playingFragment);
 //            ft.commit();

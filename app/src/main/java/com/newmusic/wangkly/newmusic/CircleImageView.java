@@ -57,7 +57,7 @@ public class CircleImageView extends AppCompatImageView {
     protected void onDraw(Canvas canvas) {
         paint.setShader(initBitmapShader());//将着色器设置给画笔
         canvas.drawCircle(width / 2, height / 2, radius, paint);//使用画笔在画布上画圆
-//        drawCircleBorder(canvas,20, Color.BLACK,radius+5);
+        drawCircleBorder(canvas,80, Color.GRAY,radius);
     }
 
 
@@ -69,9 +69,11 @@ public class CircleImageView extends AppCompatImageView {
         mPaint.setStrokeWidth(borderWidth);
         mPaint.setColor(borderColor);
 
-        Path path = new Path();
-        path.addCircle(width / 2, height / 2, radius,Path.Direction.CCW);
-        canvas.drawPath(path,mPaint);
+//        Path path = new Path();
+//        path.addCircle(width / 2, height / 2, radius,Path.Direction.CCW);
+//        canvas.drawPath(path,mPaint);
+
+        canvas.drawCircle(width / 2, height / 2, radius-40,mPaint);
 
     }
 

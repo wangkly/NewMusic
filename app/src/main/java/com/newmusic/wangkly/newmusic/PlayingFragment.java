@@ -13,6 +13,9 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -40,7 +43,6 @@ public class PlayingFragment extends Fragment {
 
     boolean playing = false;
 
-
     CircleImageView albumImg;
 
     TextView start;
@@ -55,6 +57,8 @@ public class PlayingFragment extends Fragment {
 
     ImageButton next;
 
+    Animation rotation;
+
 
     @Override
     public void onAttach(Context context) {
@@ -66,7 +70,6 @@ public class PlayingFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.playing_fragment,container,false);
-
 
         mini_win = view.findViewById(R.id.mini_win);
 
@@ -128,6 +131,11 @@ public class PlayingFragment extends Fragment {
             }
         });
 
+
+        //旋转动画
+        rotation = AnimationUtils.loadAnimation(mainActivity,R.anim.rotation);
+        LinearInterpolator interpolator = new LinearInterpolator();
+        rotation.setInterpolator(interpolator);
 
         return view;
     }
@@ -210,10 +218,15 @@ public class PlayingFragment extends Fragment {
     public void hideMiniShowFull(){
         mini_win.setVisibility(View.GONE);
         full_screen.setVisibility(View.VISIBLE);
+        if(this.playing){
+            albumImg.startAnimation(rotation);
+
+        }
     }
 
 
     public void hideFullShowMini(){
+        albumImg.clearAnimation();
         mini_win.setVisibility(View.VISIBLE);
         full_screen.setVisibility(View.GONE);
     }
