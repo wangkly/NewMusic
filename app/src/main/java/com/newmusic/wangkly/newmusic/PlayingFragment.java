@@ -1,6 +1,7 @@
 package com.newmusic.wangkly.newmusic;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -10,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +27,7 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PlayingFragment extends Fragment {
+public class PlayingFragment extends Fragment implements View.OnClickListener {
 
     MainActivity mainActivity;
     View view;
@@ -33,7 +35,6 @@ public class PlayingFragment extends Fragment {
     LinearLayout mini_win;
 
     ConstraintLayout full_screen;
-
 
     ImageView mini_img;
 
@@ -58,6 +59,8 @@ public class PlayingFragment extends Fragment {
     ImageButton next;
 
     Animation rotation;
+
+    LocalBroadcastManager localBroadcastManager;
 
 
     @Override
@@ -91,46 +94,14 @@ public class PlayingFragment extends Fragment {
         play = view.findViewById(R.id.play);
         next = view.findViewById(R.id.next);
 
-        mini_playing_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(playing){
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    //通知service 停止播放
-                    mainActivity.pause();
-                    playing =false;
-                }else {
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    //通知service 停止播放
-                    mainActivity.resume();
-                    playing =true;
-                }
-            }
-        });
+
+        mini_playing_btn.setOnClickListener(this);
+        play.setOnClickListener(this);
+        last.setOnClickListener(this);
+        next.setOnClickListener(this);
 
 
-
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(playing){
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    //通知service 停止播放
-                    mainActivity.pause();
-                    playing =false;
-                }else {
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    //通知service 停止播放
-                    mainActivity.resume();
-                    playing =true;
-                }
-            }
-        });
-
+        localBroadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
 
         //旋转动画
         rotation = AnimationUtils.loadAnimation(mainActivity,R.anim.rotation);
@@ -229,6 +200,70 @@ public class PlayingFragment extends Fragment {
         albumImg.clearAnimation();
         mini_win.setVisibility(View.VISIBLE);
         full_screen.setVisibility(View.GONE);
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.mini_playing_btn:
+                if(playing){
+                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+                    //通知service 停止播放
+                    mainActivity.pause();
+                    playing =false;
+                }else {
+                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+                    //通知service 停止播放
+                    mainActivity.resume();
+                    playing =true;
+                }
+
+                break;
+
+            case R.id.play:
+                if(playing){
+                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+                    //通知service 停止播放
+                    mainActivity.pause();
+                    playing =false;
+                }else {
+                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+                    //通知service 停止播放
+                    mainActivity.resume();
+                    playing =true;
+                }
+
+                break;
+
+            case R.id.last:
+                Intent intentLast = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+                intentLast.putExtra("type","previous");
+                intentLast.putExtra("position",0);
+                localBroadcastManager.sendBroadcast(intentLast);
+
+                break;
+
+            case R.id.next:
+                Intent intentNext = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+                intentNext.putExtra("type","next");
+                intentNext.putExtra("position",0);
+                localBroadcastManager.sendBroadcast(intentNext);
+
+                break;
+
+            default:
+                break;
+
+        }
+
+
+
+
     }
 
 

@@ -1,8 +1,11 @@
 package com.newmusic.wangkly.newmusic;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -65,7 +69,8 @@ public class MainActivity extends AppCompatActivity
     PlayingFragment playingFragment;
     PlayingFullscreenFragment fullscreenFragment;
 
-
+    LocalBroadcastManager localBroadcastManager;
+    ChangeMediaReceiver  changeMediaReceiver;
     MusicService.MyBinder myBinder;
 
     ServiceConnection  connection= new ServiceConnection() {
@@ -111,6 +116,13 @@ public class MainActivity extends AppCompatActivity
 //                        .setAction("Action", null).show();
 //            }
 //        });
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+        localBroadcastManager= LocalBroadcastManager.getInstance(this);
+        changeMediaReceiver = new ChangeMediaReceiver();
+        localBroadcastManager.registerReceiver(changeMediaReceiver,intentFilter);
+
 
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -295,4 +307,31 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    @Override
+    protected void onDestroy() {
+        localBroadcastManager.unregisterReceiver(changeMediaReceiver);
+        super.onDestroy();
+    }
+
+
+
+    class ChangeMediaReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String type = intent.getStringExtra("type");
+            int position = intent.getIntExtra("position",0);
+            if("previous".equalsIgnoreCase(type)){
+                Toast.makeText(MainActivity.this,"broadcast receive previous",Toast.LENGTH_SHORT).show();
+//                findMediaAndPlay(position >= 1 ? position -1 : 0);
+            }else{
+                Toast.makeText(MainActivity.this,"broadcast receive next",Toast.LENGTH_SHORT).show();
+//                findMediaAndPlay(position +1 >= audioList.size() ? audioList.size()-1: position +1);
+            }
+
+        }
+    }
+
 }
