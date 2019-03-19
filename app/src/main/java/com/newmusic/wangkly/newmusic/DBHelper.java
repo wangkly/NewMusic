@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    public  static final String CREATE_PLAYING = "create table playing ( key integer primary key autoincrement,id text,title text,position integer,duration integer,uri text,artist text,albumArt text)";
+    public  static final String CREATE_PLAYING = "create table playing ( Idkey integer primary key autoincrement,id text,title text,position integer,duration integer,uri text,artist text,albumArt text)";
 
     public DBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

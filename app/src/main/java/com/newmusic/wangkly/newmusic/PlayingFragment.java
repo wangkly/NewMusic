@@ -62,6 +62,8 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
     LocalBroadcastManager localBroadcastManager;
 
+    int currentPosition =0;
+
 
     @Override
     public void onAttach(Context context) {
@@ -112,7 +114,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public void setPlayingInfo(String albumArt,String title){
+    public void setPlayingInfo(String albumArt,String title,int position){
         if(null == albumArt){
             mini_img.setImageDrawable(getResources().getDrawable(R.drawable.music_img));
         }else{
@@ -123,6 +125,8 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
         mini_playing_title.setText(title);
         mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
         this.playing = true;
+
+        this.currentPosition =position;
     }
 
 
@@ -191,7 +195,9 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
         full_screen.setVisibility(View.VISIBLE);
         if(this.playing){
             albumImg.startAnimation(rotation);
-
+            play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+        }else{
+            play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
         }
     }
 
@@ -243,7 +249,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
             case R.id.last:
                 Intent intentLast = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
                 intentLast.putExtra("type","previous");
-                intentLast.putExtra("position",0);
+                intentLast.putExtra("position",this.currentPosition);
                 localBroadcastManager.sendBroadcast(intentLast);
 
                 break;
@@ -251,7 +257,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
             case R.id.next:
                 Intent intentNext = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
                 intentNext.putExtra("type","next");
-                intentNext.putExtra("position",0);
+                intentNext.putExtra("position",this.currentPosition);
                 localBroadcastManager.sendBroadcast(intentNext);
 
                 break;

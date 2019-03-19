@@ -1,7 +1,10 @@
 package com.newmusic.wangkly.newmusic;
 
+import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,11 +12,13 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +31,9 @@ public class PlayListFragment extends Fragment {
 
     MainActivity mainActivity;
 
+    LocalBroadcastManager localBroadcastManager;
+    ChangeMediaReceiver  changeMediaReceiver;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -35,6 +43,14 @@ public class PlayListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
 
          mainActivity = (MainActivity) getActivity();
+
+        localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+        localBroadcastManager= LocalBroadcastManager.getInstance(getActivity());
+        changeMediaReceiver = new ChangeMediaReceiver();
+        localBroadcastManager.registerReceiver(changeMediaReceiver,intentFilter);
 
         super.onCreate(savedInstanceState);
     }
@@ -70,6 +86,16 @@ public class PlayListFragment extends Fragment {
 
                 Map<String,Object> data = (Map<String, Object>) listview.getItemAtPosition(position);
 
+                ContentValues values = new ContentValues();
+
+                values.put("title",(String)data.get("title"));
+                values.put("position",position);
+                values.put("duration",(int) data.get("duration"));
+                values.put("uri",(String)data.get("data"));
+                values.put("artist",(String)data.get("artist"));
+                values.put("albumArt",(String)data.get("albumArt"));
+
+                mainActivity.dbHelper.getWritableDatabase().insert("play",null,values);
 
 //                Intent intent = new Intent(getContext(),MainActivity.class);
 //                intent.putExtra("position",position);
@@ -84,7 +110,7 @@ public class PlayListFragment extends Fragment {
                 String title =(String)data.get("title");
                 String albumArt =(String)data.get("albumArt");
                 String uri = (String)data.get("data");
-                mainActivity.play(uri,albumArt,title,duration);
+                mainActivity.play(uri,albumArt,title,duration,position);
             }
         });
 
@@ -156,4 +182,52 @@ public class PlayListFragment extends Fragment {
 
 
 
+    class ChangeMediaReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String type = intent.getStringExtra("type");
+            int position = intent.getIntExtra("position",0);
+            if("previous".equalsIgnoreCase(type)){
+                Toast.makeText(mainActivity,"broadcast receive previous",Toast.LENGTH_SHORT).show();
+                findMediaAndPlay(position >= 1 ? position -1 : 0);
+            }else{
+                Toast.makeText(mainActivity,"broadcast receive next",Toast.LENGTH_SHORT).show();
+                findMediaAndPlay(position +1 >= audioList.size() ? audioList.size()-1: position +1);
+            }
+
+        }
+    }
+
+
+    public void findMediaAndPlay(int position){
+        Map<String,Object> target;
+        target = audioList.get(position);
+        ContentValues values = new ContentValues();
+
+        values.put("title",(String)target.get("title"));
+        values.put("position",position);
+        values.put("duration",(int) target.get("duration"));
+        values.put("uri",(String)target.get("data"));
+        values.put("artist",(String)target.get("artist"));
+        values.put("albumArt",(String)target.get("albumArt"));
+
+        mainActivity.dbHelper.getWritableDatabase().insert("play",null,values);
+
+
+        int duration=(int) target.get("duration");
+        String title =(String)target.get("title");
+        String albumArt =(String)target.get("albumArt");
+        String uri = (String)target.get("data");
+        mainActivity.play(uri,albumArt,title,duration,position);
+
+    }
+
+
+
+    @Override
+    public void onDestroy() {
+        localBroadcastManager.unregisterReceiver(changeMediaReceiver);
+        super.onDestroy();
+    }
 }

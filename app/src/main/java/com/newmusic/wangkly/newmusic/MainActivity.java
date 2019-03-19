@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -70,8 +71,10 @@ public class MainActivity extends AppCompatActivity
     PlayingFullscreenFragment fullscreenFragment;
 
     LocalBroadcastManager localBroadcastManager;
-    ChangeMediaReceiver  changeMediaReceiver;
+
     MusicService.MyBinder myBinder;
+
+    DBHelper dbHelper;
 
     ServiceConnection  connection= new ServiceConnection() {
         @Override
@@ -117,11 +120,9 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
-        localBroadcastManager= LocalBroadcastManager.getInstance(this);
-        changeMediaReceiver = new ChangeMediaReceiver();
-        localBroadcastManager.registerReceiver(changeMediaReceiver,intentFilter);
+
+
+        dbHelper = new DBHelper(MainActivity.this,"play",null,1);
 
 
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
@@ -220,11 +221,11 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    public void play(String uri,String albumArt,String title,int duration){
+    public void play(String uri,String albumArt,String title,int duration,int position){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
         myBinder.UpdateSeekBarUi(handler);
-        playingFragment.setPlayingInfo(albumArt,title);
+        playingFragment.setPlayingInfo(albumArt,title,position);
         playingFragment.initFullScreenProps(title,duration,albumArt);
     }
 
@@ -311,27 +312,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        localBroadcastManager.unregisterReceiver(changeMediaReceiver);
+
         super.onDestroy();
     }
 
 
-
-    class ChangeMediaReceiver extends BroadcastReceiver{
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String type = intent.getStringExtra("type");
-            int position = intent.getIntExtra("position",0);
-            if("previous".equalsIgnoreCase(type)){
-                Toast.makeText(MainActivity.this,"broadcast receive previous",Toast.LENGTH_SHORT).show();
-//                findMediaAndPlay(position >= 1 ? position -1 : 0);
-            }else{
-                Toast.makeText(MainActivity.this,"broadcast receive next",Toast.LENGTH_SHORT).show();
-//                findMediaAndPlay(position +1 >= audioList.size() ? audioList.size()-1: position +1);
-            }
-
-        }
-    }
 
 }
