@@ -1,23 +1,18 @@
 package com.newmusic.wangkly.newmusic;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -36,9 +31,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import net.lucode.hackware.magicindicator.MagicIndicator;
+import net.lucode.hackware.magicindicator.ViewPagerHelper;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.CommonNavigatorAdapter;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerIndicator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorTransitionPagerTitleView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +54,7 @@ public class MainActivity extends AppCompatActivity
 
     ViewPager viewPager;
 
-    TabLayout tabLayout;
+//    TabLayout tabLayout;
 
     Toolbar toolbar;
 
@@ -64,11 +67,12 @@ public class MainActivity extends AppCompatActivity
 
     LinearLayout frame ;
 
+    private List<String> titles;
+
 
     PlayListFragment playListFragment;
     OnlinePlayListFragment onlinePlayListFragment;
     PlayingFragment playingFragment;
-    PlayingFullscreenFragment fullscreenFragment;
 
     LocalBroadcastManager localBroadcastManager;
 
@@ -147,33 +151,75 @@ public class MainActivity extends AppCompatActivity
 
     public void remainOperation(){
         List<Fragment> fragments = new ArrayList<>();
+        fragmentManager= getSupportFragmentManager();
         viewPager= findViewById(R.id.viewPager);
-        tabLayout = findViewById(R.id.tabLayout);
         frame = findViewById(R.id.frame);
+
+        titles= new ArrayList<>();
+        titles.add("本地");
+        titles.add("网络");
+
 
         playListFragment = new PlayListFragment();
         onlinePlayListFragment = new OnlinePlayListFragment();
         playingFragment = new PlayingFragment();
-        fullscreenFragment = new PlayingFullscreenFragment();
 
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
 
-        List<String> titles = new ArrayList<>();
-        titles.add("本地");
-        titles.add("网络");
-
-        fragmentManager= getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fadapter = new MyFragmentPageAdapter(fragmentManager,fragments,titles);
         viewPager.setAdapter(fadapter);
-        viewPager.setCurrentItem(0);
 
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(R.drawable.list);
-        tabLayout.getTabAt(1).setIcon(R.drawable.music);
+//        tabLayout = findViewById(R.id.tabLayout);
 
+        MagicIndicator magicIndicator = findViewById(R.id.magic_indicator);
+
+        CommonNavigator commonNavigator = new CommonNavigator(this);
+
+        commonNavigator.setAdapter(new CommonNavigatorAdapter() {
+            @Override
+            public int getCount() {
+                return titles.size();
+            }
+
+            @Override
+            public IPagerTitleView getTitleView(Context context, final int index) {
+                ColorTransitionPagerTitleView colorTitleView = new ColorTransitionPagerTitleView(context);
+                colorTitleView.setNormalColor(Color.GRAY);
+                colorTitleView.setSelectedColor(Color.BLACK);
+                colorTitleView.setText(titles.get(index));
+                colorTitleView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        viewPager.setCurrentItem(index);
+                    }
+                });
+                return colorTitleView;
+            }
+
+            @Override
+            public IPagerIndicator getIndicator(Context context) {
+                LinePagerIndicator indicator = new LinePagerIndicator(context);
+                indicator.setMode(LinePagerIndicator.MODE_WRAP_CONTENT);
+                return indicator;
+            }
+        });
+
+        magicIndicator.setNavigator(commonNavigator);
+
+        ViewPagerHelper.bind(magicIndicator,viewPager);
+
+
+
+//        viewPager.setCurrentItem(0);
+//        tabLayout.setupWithViewPager(viewPager);
+//        tabLayout.getTabAt(0).setIcon(R.drawable.list);
+//        tabLayout.getTabAt(1).setIcon(R.drawable.music);
+
+
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentTransaction.add(R.id.frame,playingFragment);
         fragmentTransaction.commit();
@@ -188,9 +234,6 @@ public class MainActivity extends AppCompatActivity
 
                 playingFragment.hideMiniShowFull();
                 toolbar.setVisibility(View.GONE);
-//                FragmentTransaction ft= fragmentManager.beginTransaction();
-//                ft.replace(R.id.frame,fullscreenFragment);
-//                ft.commit();
                 return false;
 
             }
