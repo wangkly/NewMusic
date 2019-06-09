@@ -1,5 +1,7 @@
 package com.newmusic.wangkly.newmusic;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -64,6 +66,11 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
     int currentPosition =0;
 
+    ObjectAnimator rotateAnim = null;
+
+    //用于记录当前动画执行到哪里
+    long mCurrentPlayTime  =0l;
+
 
     @Override
     public void onAttach(Context context) {
@@ -106,9 +113,15 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
         localBroadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
 
         //旋转动画
-        rotation = AnimationUtils.loadAnimation(mainActivity,R.anim.rotation);
-        LinearInterpolator interpolator = new LinearInterpolator();
-        rotation.setInterpolator(interpolator);
+//        rotation = AnimationUtils.loadAnimation(mainActivity,R.anim.rotation);
+//        LinearInterpolator interpolator = new LinearInterpolator();
+//        rotation.setInterpolator(interpolator);
+
+        rotateAnim = ObjectAnimator.ofFloat(albumImg,"rotation",0f,360f);
+        rotateAnim.setDuration(8000);
+        rotateAnim.setRepeatCount(ValueAnimator.INFINITE);
+        rotateAnim.setRepeatMode(ValueAnimator.RESTART);
+        rotateAnim.setInterpolator(new LinearInterpolator());
 
         return view;
     }
@@ -116,14 +129,14 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
     public void setPlayingInfo(String albumArt,String title,int position){
         if(null == albumArt){
-            mini_img.setImageDrawable(getResources().getDrawable(R.drawable.music_img));
+            mini_img.setImageResource(R.drawable.music_img);
         }else{
             Bitmap bm = BitmapFactory.decodeFile(albumArt);
-            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
-            mini_img.setImageDrawable(bmpDraw);
+//            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
+            mini_img.setImageBitmap(bm);
         }
         mini_playing_title.setText(title);
-        mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+        mini_playing_btn.setImageResource(R.drawable.pause);
         this.playing = true;
 
         this.currentPosition =position;
@@ -159,11 +172,11 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
         Bitmap bm;
         if (albumArt == null){
-            albumImg.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.music_img));
+            albumImg.setImageResource(R.drawable.music_img);
         } else{
             bm = BitmapFactory.decodeFile(albumArt);
-            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
-            albumImg.setImageDrawable(bmpDraw);
+//            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
+            albumImg.setImageBitmap(bm);
         }
 
     }
@@ -194,16 +207,22 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
         mini_win.setVisibility(View.GONE);
         full_screen.setVisibility(View.VISIBLE);
         if(this.playing){
-            albumImg.startAnimation(rotation);
-            play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
+//            albumImg.startAnimation(rotation);
+            rotateAnim.start();
+            play.setImageResource(R.drawable.pause);
         }else{
-            play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+            play.setImageResource(R.drawable.play);
         }
     }
 
 
     public void hideFullShowMini(){
-        albumImg.clearAnimation();
+//        albumImg.clearAnimation();
+//        rotateAnim.pause();
+        
+        mCurrentPlayTime = rotateAnim.getCurrentPlayTime();
+        rotateAnim.cancel();
+
         mini_win.setVisibility(View.VISIBLE);
         full_screen.setVisibility(View.GONE);
     }
@@ -213,38 +232,38 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.mini_playing_btn:
-                if(playing){
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    //通知service 停止播放
-                    mainActivity.pause();
-                    playing =false;
-                }else {
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    //通知service 停止播放
-                    mainActivity.resume();
-                    playing =true;
-                }
-
-                break;
-
             case R.id.play:
                 if(playing){
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.play));
+                    mini_playing_btn.setImageResource(R.drawable.play);
+                    play.setImageResource(R.drawable.play);
                     //通知service 停止播放
                     mainActivity.pause();
+//                    albumImg.clearAnimation();
+
+//                    rotateAnim.pause();//需要api到19才能支持
+
+                    mCurrentPlayTime = rotateAnim.getCurrentPlayTime();
+                    rotateAnim.cancel();
+
                     playing =false;
                 }else {
-                    mini_playing_btn.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    play.setImageDrawable(view.getResources().getDrawable(R.drawable.pause));
-                    //通知service 停止播放
+                    mini_playing_btn.setImageResource(R.drawable.pause);
+                    play.setImageResource(R.drawable.pause);
+                    //通知service 恢复播放
                     mainActivity.resume();
+//                    albumImg.startAnimation(rotation);
+//                    rotateAnim.resume();
+
+
+                    rotateAnim.start();
+                    rotateAnim.setCurrentPlayTime(mCurrentPlayTime);
+
                     playing =true;
                 }
 
                 break;
+
+
 
             case R.id.last:
                 Intent intentLast = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
@@ -263,6 +282,8 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
                 break;
 
             default:
+
+
                 break;
 
         }

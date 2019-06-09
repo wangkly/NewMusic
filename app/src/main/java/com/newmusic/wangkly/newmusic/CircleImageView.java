@@ -56,8 +56,9 @@ public class CircleImageView extends AppCompatImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         paint.setShader(initBitmapShader());//将着色器设置给画笔
-        canvas.drawCircle(width / 2, height / 2, radius, paint);//使用画笔在画布上画圆
-        drawCircleBorder(canvas,80, Color.GRAY,radius);
+        drawCircleBorder(canvas,0, Color.BLACK,radius);
+        canvas.save();
+        canvas.drawCircle(width / 2, height / 2, radius-150, paint);//使用画笔在画布上画圆
     }
 
 
@@ -65,15 +66,16 @@ public class CircleImageView extends AppCompatImageView {
     public void drawCircleBorder(Canvas canvas, int borderWidth, int borderColor, float radius){
 
         Paint mPaint = new Paint();
-        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.FILL);
         mPaint.setStrokeWidth(borderWidth);
         mPaint.setColor(borderColor);
+        canvas.drawColor(Color.WHITE);
 
 //        Path path = new Path();
 //        path.addCircle(width / 2, height / 2, radius,Path.Direction.CCW);
 //        canvas.drawPath(path,mPaint);
 
-        canvas.drawCircle(width / 2, height / 2, radius-40,mPaint);
+        canvas.drawCircle(width / 2, height / 2, radius,mPaint);
 
     }
 
@@ -83,7 +85,7 @@ public class CircleImageView extends AppCompatImageView {
     private BitmapShader initBitmapShader() {
         Bitmap bitmap = ((BitmapDrawable) getDrawable()).getBitmap();
         BitmapShader bitmapShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        float scale = Math.max(width / bitmap.getWidth(), height / bitmap.getHeight());
+        float scale = Math.max((width-150) / bitmap.getWidth(), (height-150) / bitmap.getHeight());
         matrix.setScale(scale, scale);//将图片宽高等比例缩放，避免拉伸
         bitmapShader.setLocalMatrix(matrix);
         return bitmapShader;
