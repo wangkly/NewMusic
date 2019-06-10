@@ -95,7 +95,7 @@ public class PlayListFragment extends Fragment {
                 values.put("artist",(String)data.get("artist"));
                 values.put("albumArt",(String)data.get("albumArt"));
 
-                mainActivity.dbHelper.getWritableDatabase().insert("play",null,values);
+                mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
 //                Intent intent = new Intent(getContext(),MainActivity.class);
 //                intent.putExtra("position",position);

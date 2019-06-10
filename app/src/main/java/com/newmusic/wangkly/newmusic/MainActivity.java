@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity
 
     MyFragmentPageAdapter fadapter;
 
-    Boolean isPlayingOnTop = false;
+    Boolean isfullScreenMode = false;//是否全屏播放
 
     LinearLayout frame ;
 
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity
                 ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
                 layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
                 frame.setLayoutParams(layoutParams);
-                isPlayingOnTop =true;
+                isfullScreenMode =true;
 
                 playingFragment.hideMiniShowFull();
                 toolbar.setVisibility(View.GONE);
@@ -316,13 +316,13 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        }else if(isPlayingOnTop){
+        }else if(isfullScreenMode){
             final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
             ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
             layoutParams.height = (int)(50*scale+0.5f);
 
             frame.setLayoutParams(layoutParams);
-            isPlayingOnTop =false;
+            isfullScreenMode =false;
 
             playingFragment.hideFullShowMini();
             toolbar.setVisibility(View.VISIBLE);
