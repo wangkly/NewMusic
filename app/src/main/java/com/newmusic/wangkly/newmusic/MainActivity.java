@@ -1,6 +1,7 @@
 package com.newmusic.wangkly.newmusic;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -36,12 +37,13 @@ import android.widget.Toast;
 
 import net.lucode.hackware.magicindicator.MagicIndicator;
 import net.lucode.hackware.magicindicator.ViewPagerHelper;
+import net.lucode.hackware.magicindicator.buildins.UIUtil;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.CommonNavigatorAdapter;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerIndicator;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator;
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorTransitionPagerTitleView;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ClipPagerTitleView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
+    @SuppressLint("ClickableViewAccessibility")
     public void remainOperation(){
         List<Fragment> fragments = new ArrayList<>();
         fragmentManager= getSupportFragmentManager();
@@ -156,8 +159,8 @@ public class MainActivity extends AppCompatActivity
         frame = findViewById(R.id.frame);
 
         titles= new ArrayList<>();
-        titles.add("本地");
-        titles.add("网络");
+        titles.add("本地音乐");
+        titles.add("网络资源");
 
 
         playListFragment = new PlayListFragment();
@@ -174,7 +177,7 @@ public class MainActivity extends AppCompatActivity
 //        tabLayout = findViewById(R.id.tabLayout);
 
         MagicIndicator magicIndicator = findViewById(R.id.magic_indicator);
-
+        magicIndicator.setBackgroundResource(R.drawable.round_indicator_bg);
         CommonNavigator commonNavigator = new CommonNavigator(this);
 
         commonNavigator.setAdapter(new CommonNavigatorAdapter() {
@@ -185,23 +188,30 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public IPagerTitleView getTitleView(Context context, final int index) {
-                ColorTransitionPagerTitleView colorTitleView = new ColorTransitionPagerTitleView(context);
-                colorTitleView.setNormalColor(Color.GRAY);
-                colorTitleView.setSelectedColor(Color.BLACK);
-                colorTitleView.setText(titles.get(index));
-                colorTitleView.setOnClickListener(new View.OnClickListener() {
+                ClipPagerTitleView clipPagerTitleView = new ClipPagerTitleView(context);
+                clipPagerTitleView.setTextColor(Color.GRAY);
+                clipPagerTitleView.setClipColor(Color.WHITE);
+                clipPagerTitleView.setText(titles.get(index));
+                clipPagerTitleView.setTextSize(55);
+                clipPagerTitleView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         viewPager.setCurrentItem(index);
                     }
                 });
-                return colorTitleView;
+                return clipPagerTitleView;
             }
 
             @Override
             public IPagerIndicator getIndicator(Context context) {
                 LinePagerIndicator indicator = new LinePagerIndicator(context);
-                indicator.setMode(LinePagerIndicator.MODE_WRAP_CONTENT);
+                float navigatorHeight = context.getResources().getDimension(R.dimen.common_navigator_height);
+                float borderWidth = UIUtil.dip2px(context, 1);
+                float lineHeight = navigatorHeight - 2 * borderWidth;
+                indicator.setLineHeight(lineHeight);
+                indicator.setRoundRadius(lineHeight / 2);
+                indicator.setYOffset(borderWidth);
+                indicator.setColors(Color.parseColor("#bc2a2a"));
                 return indicator;
             }
         });
@@ -227,6 +237,25 @@ public class MainActivity extends AppCompatActivity
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+//                isPlayingOnTop =true;
+//
+//                playingFragment.hideMiniShowFull();
+//                toolbar.setVisibility(View.GONE);
+//                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
+//                int fullHeight = getWindowManager().getDefaultDisplay().getHeight();
+//                ValueAnimator valueAnimator = ValueAnimator.ofInt(layoutParams.height,fullHeight);
+//                valueAnimator.setDuration(1000);
+//                valueAnimator.start();
+//                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                    @Override
+//                    public void onAnimationUpdate(ValueAnimator animation) {
+//                       int height = (int) animation.getAnimatedValue();
+//                        frame.getLayoutParams().height = height;
+//                        frame.requestLayout();
+//                    }
+//                });
+//                return  false;
+
                 ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
                 layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
                 frame.setLayoutParams(layoutParams);
