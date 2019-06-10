@@ -26,7 +26,7 @@
 
         <ImageButton
             android:id="@+id/mini_playing_btn"
-            android:src="@drawable/play"
+            android:src="@drawable/ic_play"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@android:color/transparent"/>
@@ -107,7 +107,7 @@
 
         <ImageButton
             android:id="@+id/last"
-            android:src="@drawable/pre"
+            android:src="@drawable/ic_previous"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:gravity="center"
@@ -122,18 +122,18 @@
 
         <ImageButton
             android:id="@+id/play"
-            android:src="@drawable/play"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:src="@drawable/ic_play"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:gravity="center"
-            android:scaleType="centerInside"
+            android:scaleType="fitCenter"
             android:background="#00000000"
             app:layout_constraintLeft_toRightOf="@id/last"
             app:layout_constraintRight_toLeftOf="@id/next"/>
 
         <ImageButton
             android:id="@+id/next"
-            app:srcCompat="@drawable/next"
+            app:srcCompat="@drawable/ic_next"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:gravity="center"

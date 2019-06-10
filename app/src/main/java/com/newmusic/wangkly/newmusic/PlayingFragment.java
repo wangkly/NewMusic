@@ -136,7 +136,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
             mini_img.setImageBitmap(bm);
         }
         mini_playing_title.setText(title);
-        mini_playing_btn.setImageResource(R.drawable.pause);
+        mini_playing_btn.setImageResource(R.drawable.ic_pause);
         this.playing = true;
 
         this.currentPosition =position;
@@ -209,9 +209,9 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
         if(this.playing){
 //            albumImg.startAnimation(rotation);
             rotateAnim.start();
-            play.setImageResource(R.drawable.pause);
+            play.setImageResource(R.drawable.ic_pause);
         }else{
-            play.setImageResource(R.drawable.play);
+            play.setImageResource(R.drawable.ic_play);
         }
     }
 
@@ -234,8 +234,8 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
             case R.id.mini_playing_btn:
             case R.id.play:
                 if(playing){
-                    mini_playing_btn.setImageResource(R.drawable.play);
-                    play.setImageResource(R.drawable.play);
+                    mini_playing_btn.setImageResource(R.drawable.ic_play);
+                    play.setImageResource(R.drawable.ic_play);
                     //通知service 停止播放
                     mainActivity.pause();
 //                    albumImg.clearAnimation();
@@ -247,8 +247,8 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
                     playing =false;
                 }else {
-                    mini_playing_btn.setImageResource(R.drawable.pause);
-                    play.setImageResource(R.drawable.pause);
+                    mini_playing_btn.setImageResource(R.drawable.ic_pause);
+                    play.setImageResource(R.drawable.ic_pause);
                     //通知service 恢复播放
                     mainActivity.resume();
 //                    albumImg.startAnimation(rotation);
