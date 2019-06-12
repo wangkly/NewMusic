@@ -1,25 +1,23 @@
 package com.newmusic.wangkly.newmusic;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -33,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import net.lucode.hackware.magicindicator.MagicIndicator;
 import net.lucode.hackware.magicindicator.ViewPagerHelper;
@@ -52,11 +49,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
-    private final int WRITE_PERMISSION_REQUEST =1;
 
     ViewPager viewPager;
 
-//    TabLayout tabLayout;
 
     Toolbar toolbar;
 
@@ -76,16 +71,19 @@ public class MainActivity extends AppCompatActivity
     OnlinePlayListFragment onlinePlayListFragment;
     PlayingFragment playingFragment;
 
-    LocalBroadcastManager localBroadcastManager;
 
     MusicService.MyBinder myBinder;
 
     DBHelper dbHelper;
 
+
+    private PermissionHelper mPermissionHelper;
+
     ServiceConnection  connection= new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             myBinder = (MusicService.MyBinder) service;
+            getLastPlayingInfo();
         }
 
         @Override
@@ -96,20 +94,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    private  Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            playingFragment.updateProgress(msg.what);
-        }
-    };
-
-
-    public void seekTo(int progress){
-        myBinder.updateProgress(progress);
-    }
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,19 +101,7 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab =  findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
-
-
-        dbHelper = new DBHelper(MainActivity.this,"play",null,1);
-
+        dbHelper = new DBHelper(MainActivity.this,"play.db",null,1);
 
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -140,13 +112,33 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView =  findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if(ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},WRITE_PERMISSION_REQUEST);
+
+        //请求应用权限交由PermissionHelper处理
+        mPermissionHelper = new PermissionHelper(this);
+        mPermissionHelper.setOnApplyPermissionListener(new PermissionHelper.OnApplyPermissionListener() {
+            @Override
+            public void onAfterApplyAllPermission() {
+
+                remainOperation();
+            }
+        });
+
+
+        if(Build.VERSION.SDK_INT < 23){ //Android 6.0 以下
+                // 如果系统版本低于23，直接跑应用的逻辑
+            remainOperation();
         }else{
-            this.remainOperation();
+
+            if(mPermissionHelper.isAllRequestedPermissionGranted()){
+                //所有权限都被允许，执行后面的逻辑
+                remainOperation();
+
+            }else {
+                //非所有权限被允许。请求权限
+                mPermissionHelper.applyPermissions();
+            }
         }
+
     }
 
 
@@ -174,7 +166,6 @@ public class MainActivity extends AppCompatActivity
         fadapter = new MyFragmentPageAdapter(fragmentManager,fragments,titles);
         viewPager.setAdapter(fadapter);
 
-//        tabLayout = findViewById(R.id.tabLayout);
 
         MagicIndicator magicIndicator = findViewById(R.id.magic_indicator);
         magicIndicator.setBackgroundResource(R.drawable.round_indicator_bg);
@@ -222,13 +213,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-//        viewPager.setCurrentItem(0);
-//        tabLayout.setupWithViewPager(viewPager);
-//        tabLayout.getTabAt(0).setIcon(R.drawable.list);
-//        tabLayout.getTabAt(1).setIcon(R.drawable.music);
-
-
-
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentTransaction.add(R.id.frame,playingFragment);
@@ -237,24 +221,6 @@ public class MainActivity extends AppCompatActivity
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-//                isPlayingOnTop =true;
-//
-//                playingFragment.hideMiniShowFull();
-//                toolbar.setVisibility(View.GONE);
-//                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
-//                int fullHeight = getWindowManager().getDefaultDisplay().getHeight();
-//                ValueAnimator valueAnimator = ValueAnimator.ofInt(layoutParams.height,fullHeight);
-//                valueAnimator.setDuration(1000);
-//                valueAnimator.start();
-//                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//                    @Override
-//                    public void onAnimationUpdate(ValueAnimator animation) {
-//                       int height = (int) animation.getAnimatedValue();
-//                        frame.getLayoutParams().height = height;
-//                        frame.requestLayout();
-//                    }
-//                });
-//                return  false;
 
                 ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
                 layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
@@ -271,29 +237,77 @@ public class MainActivity extends AppCompatActivity
 
         Intent ServiceIntent = new Intent(MainActivity.this,MusicService.class);
         bindService(ServiceIntent,connection,BIND_AUTO_CREATE);
+
+
+    }
+
+
+
+
+    public void getLastPlayingInfo(){
+        String title="";
+        String uri="";
+        String albumArt = null;
+        int duration =0;
+        int position =0;
+//        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,"Idkey=?",new String[]{"1"},null,null,null);
+        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+
+        if(cursor.moveToFirst()){
+
+        do {
+                title = cursor.getString(cursor.getColumnIndex("title"));
+                uri = cursor.getString(cursor.getColumnIndex("uri"));
+                albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
+                duration = cursor.getInt(cursor.getColumnIndex("duration"));
+                position = cursor.getInt(cursor.getColumnIndex("position"));
+            } while (cursor.moveToNext());
+
+        }
+
+
+        if(null != uri && !"".equals(uri)){
+            myBinder.initMediaPlayer(uri);
+            myBinder.UpdateSeekBarUi(handler);
+            playingFragment.preparePlayingInfo(albumArt,title,position);
+            playingFragment.initFullScreenProps(title,duration,albumArt);
+        }
+
     }
 
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case WRITE_PERMISSION_REQUEST:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        mPermissionHelper.onRequestPermissionsResult(requestCode,permissions,grantResults);
+    }
 
-                    this.remainOperation();
 
-                }else{
-                    Toast.makeText(MainActivity.this,"未授予权限",Toast.LENGTH_LONG).show();
-                    return;
-                }
-        }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mPermissionHelper.onActivityResult(requestCode,resultCode,data);
     }
 
 
 
 
-    public void play(String uri,String albumArt,String title,int duration,int position){
+
+    private  Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            playingFragment.updateProgress(msg.what);
+        }
+    };
+
+
+    public void seekTo(int progress){
+        myBinder.updateProgress(progress);
+    }
+
+
+    public void play(String uri, String albumArt, String title, int duration, int position){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
         myBinder.UpdateSeekBarUi(handler);
@@ -311,6 +325,10 @@ public class MainActivity extends AppCompatActivity
         myBinder.resume();
     }
 
+
+
+
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
@@ -326,9 +344,7 @@ public class MainActivity extends AppCompatActivity
 
             playingFragment.hideFullShowMini();
             toolbar.setVisibility(View.VISIBLE);
-//            FragmentTransaction ft= fragmentManager.beginTransaction();
-//            ft.replace(R.id.frame,playingFragment);
-//            ft.commit();
+
         } else {
             super.onBackPressed();
         }

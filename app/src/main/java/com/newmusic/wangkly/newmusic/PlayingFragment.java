@@ -144,6 +144,21 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
 
 
+    public void preparePlayingInfo(String albumArt,String title,int position){
+        if(null == albumArt){
+            mini_img.setImageResource(R.drawable.music_img);
+        }else{
+            Bitmap bm = BitmapFactory.decodeFile(albumArt);
+            mini_img.setImageBitmap(bm);
+        }
+        mini_playing_title.setText(title);
+
+        this.currentPosition =position;
+    }
+
+
+
+
 
     public void initFullScreenProps(String title,int duration,String albumArt){
         String time = this.formatTime(duration);
@@ -175,7 +190,6 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
             albumImg.setImageResource(R.drawable.music_img);
         } else{
             bm = BitmapFactory.decodeFile(albumArt);
-//            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
             albumImg.setImageBitmap(bm);
         }
 

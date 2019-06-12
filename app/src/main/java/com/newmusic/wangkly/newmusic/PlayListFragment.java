@@ -95,17 +95,14 @@ public class PlayListFragment extends Fragment {
                 values.put("artist",(String)data.get("artist"));
                 values.put("albumArt",(String)data.get("albumArt"));
 
+                Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+                if(cursor.getCount() > 0){
+                    mainActivity.dbHelper.getWritableDatabase().delete("playing",null,null);
+                }
+
                 mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
-//                Intent intent = new Intent(getContext(),MainActivity.class);
-//                intent.putExtra("position",position);
-//                intent.putExtra("id",(String)data.get("id"));
-//                intent.putExtra("uri",(String)data.get("data"));
-//                intent.putExtra("duration",(int) data.get("duration"));
-//                intent.putExtra("title",(String)data.get("title"));
-//                intent.putExtra("artist",(String)data.get("artist"));
-//                intent.putExtra("albumArt",(String)data.get("albumArt"));
-//                startActivity(intent);
+
                 int duration=(int) data.get("duration");
                 String title =(String)data.get("title");
                 String albumArt =(String)data.get("albumArt");
@@ -212,7 +209,13 @@ public class PlayListFragment extends Fragment {
         values.put("artist",(String)target.get("artist"));
         values.put("albumArt",(String)target.get("albumArt"));
 
-        mainActivity.dbHelper.getWritableDatabase().insert("play",null,values);
+
+        Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+        if(cursor.getCount() > 0){
+            mainActivity.dbHelper.getWritableDatabase().delete("playing",null,null);
+        }
+
+        mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
 
         int duration=(int) target.get("duration");
