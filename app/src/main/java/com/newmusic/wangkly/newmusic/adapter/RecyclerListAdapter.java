@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 
 import com.newmusic.wangkly.newmusic.R;
-import com.newmusic.wangkly.newmusic.view.RecyclerItem;
+import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
 
 
-    private List<RecyclerItem> mList;
+    private List<PlaylistItem> mList;
 
 
     private final int ITEM_VIEWTYPE = 0;//普通列表项的view_type
@@ -42,7 +42,7 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
 
 
-    public RecyclerListAdapter(List<RecyclerItem> mList) {
+    public RecyclerListAdapter(List<PlaylistItem> mList) {
         this.mList = mList;
     }
 
@@ -68,13 +68,15 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
 
         if(viewHolder instanceof ViewHolder){
-            final RecyclerItem item = mList.get(i);
+            final PlaylistItem item = mList.get(i);
 
             ViewHolder holder = (ViewHolder) viewHolder;
             LinearLayout itemLine =  holder.item_line;
 
-            holder.image.setImageResource(R.drawable.ic_arrow);
-            holder.textView.setText(item.getName());
+//            holder.image.setImageResource(R.drawable.ic_arrow);
+
+            holder.audio_title.setText(item.getTitle());
+            holder.audio_author.setText(item.getArtist());
 
 //            itemLine.setOnClickListener(new View.OnClickListener() {
 //                @Override
@@ -144,15 +146,19 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         private LinearLayout item_line;
 
-        private ImageView image;
+//        private ImageView image;
 
-        private TextView textView;
+        private TextView audio_title;
+
+        private TextView audio_author;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             item_line = itemView.findViewById(R.id.item_line);
-            image = itemView.findViewById(R.id.recycler_img);
-            textView = itemView.findViewById(R.id.recycler_txt);
+//            image = itemView.findViewById(R.id.recycler_img);
+
+            audio_title = itemView.findViewById(R.id.audio_title);
+            audio_author = itemView.findViewById(R.id.audio_author);
         }
     }
 

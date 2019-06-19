@@ -13,25 +13,29 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.newmusic.wangkly.newmusic.MainActivity;
 import com.newmusic.wangkly.newmusic.R;
-import com.newmusic.wangkly.newmusic.adapter.PlaylistSimpleAdapter;
+import com.newmusic.wangkly.newmusic.adapter.PlainRecyclerViewAdapter;
+import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.listener.RecyclerViewItemTouchListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class PlayListFragment extends Fragment {
 
-    List<Map<String,Object>> audioList = new ArrayList<>();
+    private List<PlaylistItem> audioList;
+
+    private RecyclerView mRecyclerView;
+
 
     MainActivity mainActivity;
 
@@ -74,30 +78,81 @@ public class PlayListFragment extends Fragment {
 
 
     public  void initAudioList(View view){
-        ListView listview = view.findViewById(R.id.playlist);
+//        ListView listview = view.findViewById(R.id.playlist);
+//        mRecyclerView = view.findViewById(R.id.playlist);
 
-        audioList = this.getAudioList();
+//        audioList = this.getAudioList();
 
-        PlaylistSimpleAdapter playlistSimpleAdapter = new PlaylistSimpleAdapter(view.getContext(),audioList,
-                R.layout.audio_item,new String[]{"title","artist"},new int[]{R.id.audio_title,R.id.audio_author});
+//        PlaylistSimpleAdapter playlistSimpleAdapter = new PlaylistSimpleAdapter(view.getContext(),audioList,
+//                R.layout.audio_item,new String[]{"title","artist"},new int[]{R.id.audio_title,R.id.audio_author});
 
-        listview.setAdapter(playlistSimpleAdapter);
+//        listview.setAdapter(playlistSimpleAdapter);
+//
+//        listview.setOnItemClickListener(new ListView.OnItemClickListener(){
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                ListView listview = (ListView) parent;
+//
+//                Map<String,Object> data = (Map<String, Object>) listview.getItemAtPosition(position);
+//
+//                ContentValues values = new ContentValues();
+//
+//                values.put("title",(String)data.get("title"));
+//                values.put("position",position);
+//                values.put("duration",(int) data.get("duration"));
+//                values.put("uri",(String)data.get("data"));
+//                values.put("artist",(String)data.get("artist"));
+//                values.put("albumArt",(String)data.get("albumArt"));
+//
+//                Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+//                if(cursor.getCount() > 0){
+//                    mainActivity.dbHelper.getWritableDatabase().delete("playing",null,null);
+//                }
+//
+//                mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
+//
+//
+//                int duration=(int) data.get("duration");
+//                String title =(String)data.get("title");
+//                String albumArt =(String)data.get("albumArt");
+//                String uri = (String)data.get("data");
+//                mainActivity.play(uri,albumArt,title,duration,position);
+//            }
+//        });
 
-        listview.setOnItemClickListener(new ListView.OnItemClickListener(){
+
+        mRecyclerView = view.findViewById(R.id.playlist);
+
+        List<PlaylistItem> audioList  = this.getAudioList();
+
+        final PlainRecyclerViewAdapter adapter = new PlainRecyclerViewAdapter(audioList);
+
+        mRecyclerView.setAdapter(adapter);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        //分割线
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
+
+
+        mRecyclerView.addOnItemTouchListener(new RecyclerViewItemTouchListener(getContext(),
+                    mRecyclerView, new RecyclerViewItemTouchListener.ItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ListView listview = (ListView) parent;
+            public void onItemClick(View view, int position) {
 
-                Map<String,Object> data = (Map<String, Object>) listview.getItemAtPosition(position);
+                PlaylistItem item = adapter.getItemAtPosition(position);
 
                 ContentValues values = new ContentValues();
 
-                values.put("title",(String)data.get("title"));
+                values.put("title",item.getTitle());
                 values.put("position",position);
-                values.put("duration",(int) data.get("duration"));
-                values.put("uri",(String)data.get("data"));
-                values.put("artist",(String)data.get("artist"));
-                values.put("albumArt",(String)data.get("albumArt"));
+                values.put("duration",item.getDuration());
+                values.put("uri",item.getData());
+                values.put("artist",item.getArtist());
+                values.put("albumArt",item.getAlbumArt());
 
                 Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
                 if(cursor.getCount() > 0){
@@ -106,22 +161,27 @@ public class PlayListFragment extends Fragment {
 
                 mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
-
-                int duration=(int) data.get("duration");
-                String title =(String)data.get("title");
-                String albumArt =(String)data.get("albumArt");
-                String uri = (String)data.get("data");
+                int duration=item.getDuration();
+                String title = item.getTitle();
+                String albumArt =item.getAlbumArt();
+                String uri = item.getData();
                 mainActivity.play(uri,albumArt,title,duration,position);
+
             }
-        });
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+
+            }
+        }));
 
     }
 
 
 
-    public List<Map<String,Object>> getAudioList(){
+    public List<PlaylistItem> getAudioList(){
 
-        List<Map<String,Object>> list = new ArrayList<>();
+        List<PlaylistItem> list = new ArrayList<>();
 
         String[] projection = new String[]{
                 MediaStore.Audio.Media._ID,
@@ -140,23 +200,22 @@ public class PlayListFragment extends Fragment {
 
             while (cursor.moveToNext()){
 
-                Map<String,Object> map = new HashMap<>();
-                map.put("id",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
-                map.put("title",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-                map.put("data",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
-                map.put("artist",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-                map.put("displayName",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
-                map.put("duration",cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
-
+                PlaylistItem item = new PlaylistItem();
+                item.setId(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
+                item.setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+                item.setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
+                item.setArtist(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+                item.setDisplayName(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
+                item.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
 
                 int album_id =cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-
                 String albumArt =getAlbumArt(album_id);
 
-                map.put("albumArt",albumArt);
+                item.setAlbumArt(albumArt);
 
-                if((int)map.get("duration") >= 60000){
-                    list.add(map);
+
+                if(item.getDuration() >= 60000){
+                    list.add(item);
                 }
             }
         }
@@ -177,7 +236,6 @@ public class PlayListFragment extends Fragment {
             album_art = cur.getString(0);
         }
         cur.close();
-        cur = null;
         return album_art;
     }
 
@@ -202,16 +260,17 @@ public class PlayListFragment extends Fragment {
 
 
     public void findMediaAndPlay(int position){
-        Map<String,Object> target;
-        target = audioList.get(position);
+        PlaylistItem target = audioList.get(position);
+
+
         ContentValues values = new ContentValues();
 
-        values.put("title",(String)target.get("title"));
+        values.put("title",target.getTitle());
         values.put("position",position);
-        values.put("duration",(int) target.get("duration"));
-        values.put("uri",(String)target.get("data"));
-        values.put("artist",(String)target.get("artist"));
-        values.put("albumArt",(String)target.get("albumArt"));
+        values.put("duration",target.getDuration());
+        values.put("uri",target.getData());
+        values.put("artist",target.getArtist());
+        values.put("albumArt",target.getAlbumArt());
 
 
         Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
@@ -222,10 +281,10 @@ public class PlayListFragment extends Fragment {
         mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
 
-        int duration=(int) target.get("duration");
-        String title =(String)target.get("title");
-        String albumArt =(String)target.get("albumArt");
-        String uri = (String)target.get("data");
+        int duration=target.getDuration();
+        String title =target.getTitle();
+        String albumArt =target.getAlbumArt();
+        String uri = target.getData();
         mainActivity.play(uri,albumArt,title,duration,position);
 
     }
