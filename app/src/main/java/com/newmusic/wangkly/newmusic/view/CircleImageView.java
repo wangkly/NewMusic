@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;

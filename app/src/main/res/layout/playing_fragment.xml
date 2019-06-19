@@ -46,7 +46,7 @@
         app:layout_constraintBottom_toTopOf="@id/bar"
         >
 
-        <com.newmusic.wangkly.newmusic.CircleImageView
+        <com.newmusic.wangkly.newmusic.view.CircleImageView
             android:id="@+id/albumImg"
             android:layout_width="300dp"
             android:layout_height="300dp"

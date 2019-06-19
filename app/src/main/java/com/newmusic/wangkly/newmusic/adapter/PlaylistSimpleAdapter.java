@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.newmusic.wangkly.newmusic.R;
 
 import java.util.List;
 import java.util.Map;

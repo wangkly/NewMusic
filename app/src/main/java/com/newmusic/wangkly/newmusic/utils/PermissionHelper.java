@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.utils;
 
 import android.Manifest;
 import android.app.Activity;

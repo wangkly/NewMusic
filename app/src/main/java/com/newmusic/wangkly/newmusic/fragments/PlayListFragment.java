@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -19,6 +19,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.newmusic.wangkly.newmusic.MainActivity;
+import com.newmusic.wangkly.newmusic.R;
+import com.newmusic.wangkly.newmusic.adapter.PlaylistSimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;

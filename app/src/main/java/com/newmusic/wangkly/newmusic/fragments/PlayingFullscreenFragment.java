@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.fragments;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,6 +15,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.newmusic.wangkly.newmusic.R;
+import com.newmusic.wangkly.newmusic.view.CircleImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

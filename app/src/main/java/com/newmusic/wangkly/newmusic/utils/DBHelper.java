@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.utils;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

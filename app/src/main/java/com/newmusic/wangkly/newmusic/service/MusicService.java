@@ -1,4 +1,4 @@
-package com.newmusic.wangkly.newmusic;
+package com.newmusic.wangkly.newmusic.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -11,8 +11,6 @@ import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static android.content.ContentValues.TAG;
 
 public class MusicService extends Service {
     public static final String TAG = "MusicService";

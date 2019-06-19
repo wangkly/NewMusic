@@ -32,6 +32,14 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
+import com.newmusic.wangkly.newmusic.adapter.MyFragmentPageAdapter;
+import com.newmusic.wangkly.newmusic.fragments.OnlinePlayListFragment;
+import com.newmusic.wangkly.newmusic.fragments.PlayListFragment;
+import com.newmusic.wangkly.newmusic.fragments.PlayingFragment;
+import com.newmusic.wangkly.newmusic.service.MusicService;
+import com.newmusic.wangkly.newmusic.utils.DBHelper;
+import com.newmusic.wangkly.newmusic.utils.PermissionHelper;
+
 import net.lucode.hackware.magicindicator.MagicIndicator;
 import net.lucode.hackware.magicindicator.ViewPagerHelper;
 import net.lucode.hackware.magicindicator.buildins.UIUtil;
@@ -74,7 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     MusicService.MyBinder myBinder;
 
-    DBHelper dbHelper;
+    public DBHelper dbHelper;
 
 
     private PermissionHelper mPermissionHelper;
