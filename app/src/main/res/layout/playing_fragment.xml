@@ -133,7 +133,7 @@
 
         <ImageButton
             android:id="@+id/next"
-            app:srcCompat="@drawable/ic_next"
+            android:src="@drawable/ic_next"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:gravity="center"
