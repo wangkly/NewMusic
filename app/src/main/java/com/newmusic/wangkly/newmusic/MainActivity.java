@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,8 +32,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.newmusic.wangkly.newmusic.activities.PlayingActivity;
 import com.newmusic.wangkly.newmusic.adapter.MyFragmentPageAdapter;
 import com.newmusic.wangkly.newmusic.fragments.OnlinePlayListFragment;
 import com.newmusic.wangkly.newmusic.fragments.PlayListFragment;
@@ -74,10 +80,17 @@ public class MainActivity extends AppCompatActivity
 
     private List<String> titles;
 
+    private ImageView mini_img;
+
+    private TextView mini_playing_title;
+
+    private ImageButton mini_playing_btn;
+
+
 
     PlayListFragment playListFragment;
     OnlinePlayListFragment onlinePlayListFragment;
-    PlayingFragment playingFragment;
+//    PlayingFragment playingFragment;
 
 
     MusicService.MyBinder myBinder;
@@ -158,6 +171,13 @@ public class MainActivity extends AppCompatActivity
         viewPager= findViewById(R.id.viewPager);
         frame = findViewById(R.id.frame);
 
+
+        mini_img = findViewById(R.id.mini_img);
+
+        mini_playing_title = findViewById(R.id.mini_playing_title);
+
+        mini_playing_btn = findViewById(R.id.mini_playing_btn);
+
         titles= new ArrayList<>();
         titles.add("本地音乐");
         titles.add("网络资源");
@@ -165,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 
         playListFragment = new PlayListFragment();
         onlinePlayListFragment = new OnlinePlayListFragment();
-        playingFragment = new PlayingFragment();
+//        playingFragment = new PlayingFragment();
 
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
@@ -220,31 +240,60 @@ public class MainActivity extends AppCompatActivity
         ViewPagerHelper.bind(magicIndicator,viewPager);
 
 
-
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.add(R.id.frame,playingFragment);
-        fragmentTransaction.commit();
+//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//        fragmentTransaction.add(R.id.frame,playingFragment);
+//        fragmentTransaction.commit();
 
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
-                layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
-                frame.setLayoutParams(layoutParams);
-                isfullScreenMode =true;
+//                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
+//                layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
+//                frame.setLayoutParams(layoutParams);
+//                isfullScreenMode =true;
+//
+//                playingFragment.hideMiniShowFull();
+//                toolbar.setVisibility(View.GONE);
+//                return false;
 
-                playingFragment.hideMiniShowFull();
-                toolbar.setVisibility(View.GONE);
+
+                Intent intent = new Intent(MainActivity.this, PlayingActivity.class);
+
+                Bundle bundle = new Bundle();
+
+                bundle.putBinder("myBinder",myBinder);
+
+                intent.putExtras(bundle);
+
+                startActivity(intent);
+
+                overridePendingTransition(R.anim.bottom_in,R.anim.bottom_silent);
+
                 return false;
-
             }
         });
 
 
         Intent ServiceIntent = new Intent(MainActivity.this,MusicService.class);
         bindService(ServiceIntent,connection,BIND_AUTO_CREATE);
+
+
+
+        mini_playing_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(myBinder.isPlaying()){
+                    mini_playing_btn.setImageResource(R.drawable.ic_play);
+                    //通知service 停止播放
+                    pause();
+                }else {
+                    mini_playing_btn.setImageResource(R.drawable.ic_pause);
+                    //通知service 恢复播放
+                    resume();
+                }
+            }
+        });
 
 
     }
@@ -256,8 +305,7 @@ public class MainActivity extends AppCompatActivity
         String title="";
         String uri="";
         String albumArt = null;
-        int duration =0;
-        int position =0;
+
 //        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,"Idkey=?",new String[]{"1"},null,null,null);
         Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
 
@@ -267,8 +315,7 @@ public class MainActivity extends AppCompatActivity
                 title = cursor.getString(cursor.getColumnIndex("title"));
                 uri = cursor.getString(cursor.getColumnIndex("uri"));
                 albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
-                duration = cursor.getInt(cursor.getColumnIndex("duration"));
-                position = cursor.getInt(cursor.getColumnIndex("position"));
+
             } while (cursor.moveToNext());
 
         }
@@ -276,9 +323,22 @@ public class MainActivity extends AppCompatActivity
 
         if(null != uri && !"".equals(uri)){
             myBinder.initMediaPlayer(uri);
-            myBinder.UpdateSeekBarUi(handler);
-            playingFragment.preparePlayingInfo(albumArt,title,position);
-            playingFragment.initFullScreenProps(title,duration,albumArt);
+//            myBinder.UpdateSeekBarUi(handler);
+
+            if(null == albumArt){
+                mini_img.setImageResource(R.drawable.music_img);
+            }else{
+                Bitmap bm = BitmapFactory.decodeFile(albumArt);
+                mini_img.setImageBitmap(bm);
+            }
+
+            mini_playing_title.setText(title);
+
+
+//            playingFragment.preparePlayingInfo(albumArt,title,position);
+//            playingFragment.initFullScreenProps(title,duration,albumArt);
+
+
         }
 
     }
@@ -299,17 +359,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-
-
-    private  Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            playingFragment.updateProgress(msg.what);
-        }
-    };
-
-
     public void seekTo(int progress){
         myBinder.updateProgress(progress);
     }
@@ -318,9 +367,12 @@ public class MainActivity extends AppCompatActivity
     public void play(String uri, String albumArt, String title, int duration, int position){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
-        myBinder.UpdateSeekBarUi(handler);
-        playingFragment.setPlayingInfo(albumArt,title,position);
-        playingFragment.initFullScreenProps(title,duration,albumArt);
+//        myBinder.UpdateSeekBarUi(handler);
+
+
+
+//        playingFragment.setPlayingInfo(albumArt,title,position);
+//        playingFragment.initFullScreenProps(title,duration,albumArt);
     }
 
 
@@ -350,7 +402,7 @@ public class MainActivity extends AppCompatActivity
             frame.setLayoutParams(layoutParams);
             isfullScreenMode =false;
 
-            playingFragment.hideFullShowMini();
+//            playingFragment.hideFullShowMini();
             toolbar.setVisibility(View.VISIBLE);
 
         } else {

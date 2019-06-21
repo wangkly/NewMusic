@@ -3,6 +3,9 @@
     android:id="@+id/item_line"
     android:layout_width="match_parent"
     android:layout_height="60dp"
+    android:background="@drawable/item_selector"
+    android:clickable="true"
+    android:focusable="true"
     android:orientation="vertical">
 
     <!--<ImageView-->

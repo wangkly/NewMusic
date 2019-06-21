@@ -56,7 +56,8 @@ public class OnlinePlayListFragment extends Fragment {
 
 
 
-            task.execute("http://172.19.8.49:3000/user/playlist?uid=32953014");
+//            task.execute("http://172.19.8.49:3000/user/playlist?uid=32953014");
+            task.execute("http://172.19.8.40:3001/test");
 
             return view;
     }

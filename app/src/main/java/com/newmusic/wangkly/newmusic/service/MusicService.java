@@ -95,6 +95,21 @@ public class MusicService extends Service {
         }
 
 
+        public boolean isPlaying(){
+
+            return mediaPlayer.isPlaying();
+        }
+
+
+        public int getCurrentPositon(){
+
+            if(null != mediaPlayer){
+                return mediaPlayer.getCurrentPosition();
+            }
+            return 0;
+        }
+
+
         public void unbindCallback(){
             Log.i("MyService", "unbindCallback: timer cancel ");
             timer.cancel();

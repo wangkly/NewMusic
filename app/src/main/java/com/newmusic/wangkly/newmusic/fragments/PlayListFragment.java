@@ -26,6 +26,7 @@ import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.adapter.PlainRecyclerViewAdapter;
 import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
 import com.newmusic.wangkly.newmusic.listener.RecyclerViewItemTouchListener;
+import com.newmusic.wangkly.newmusic.utils.MediaUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +124,7 @@ public class PlayListFragment extends Fragment {
 
         mRecyclerView = view.findViewById(R.id.playlist);
 
-        List<PlaylistItem> audioList  = this.getAudioList();
+        List<PlaylistItem> audioList  = MediaUtil.getAudioList(getContext());
 
         final PlainRecyclerViewAdapter adapter = new PlainRecyclerViewAdapter(audioList);
 
@@ -177,67 +178,6 @@ public class PlayListFragment extends Fragment {
 
     }
 
-
-
-    public List<PlaylistItem> getAudioList(){
-
-        List<PlaylistItem> list = new ArrayList<>();
-
-        String[] projection = new String[]{
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DISPLAY_NAME,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.ALBUM_ID
-        };
-
-        Cursor cursor =this.getContext().getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,projection,null,null,null);
-
-
-        if(cursor != null && cursor.moveToFirst()){
-
-            while (cursor.moveToNext()){
-
-                PlaylistItem item = new PlaylistItem();
-                item.setId(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
-                item.setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-                item.setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
-                item.setArtist(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-                item.setDisplayName(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
-                item.setDuration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
-
-                int album_id =cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                String albumArt =getAlbumArt(album_id);
-
-                item.setAlbumArt(albumArt);
-
-
-                if(item.getDuration() >= 60000){
-                    list.add(item);
-                }
-            }
-        }
-
-        return list;
-
-    }
-
-
-
-    private String getAlbumArt(int album_id) {
-        String mUriAlbums = "content://media/external/audio/albums";
-        String[] projection = new String[] { "album_art" };
-        Cursor cur = this.getContext().getContentResolver().query(Uri.parse(mUriAlbums + "/" + Integer.toString(album_id)),projection, null, null, null);
-        String album_art = null;
-        if (cur.getCount() > 0 && cur.getColumnCount() > 0){
-            cur.moveToNext();
-            album_art = cur.getString(0);
-        }
-        cur.close();
-        return album_art;
-    }
 
 
 
