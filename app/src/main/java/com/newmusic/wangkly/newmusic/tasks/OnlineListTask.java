@@ -1,20 +1,18 @@
 package com.newmusic.wangkly.newmusic.tasks;
 
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 
+import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
 import com.newmusic.wangkly.newmusic.utils.OkHttpUtils;
 
 public class OnlineListTask extends AsyncTask<String ,Integer,String>{
 
 
-    private Handler handler;
+    private QueryResultListener listener;
 
 
-    public OnlineListTask(Handler handler) {
-        this.handler = handler;
+    public OnlineListTask(QueryResultListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -24,11 +22,6 @@ public class OnlineListTask extends AsyncTask<String ,Integer,String>{
 
 
         String resp =  okHttpUtils.getQuery(strings[0]);
-
-
-        System.out.println(resp);
-
-
 
         return resp;
     }
@@ -44,15 +37,8 @@ public class OnlineListTask extends AsyncTask<String ,Integer,String>{
     @Override
     protected void onPostExecute(String s) {
 
-        Bundle bundle = new Bundle();
 
-        bundle.putString("resp",s);
-
-        Message msg = new Message();
-
-        msg.setData(bundle);
-
-        handler.sendMessage(msg);
+        listener.onSuccess(s);
 
         super.onPostExecute(s);
     }

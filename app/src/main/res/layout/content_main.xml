@@ -30,7 +30,7 @@
         <net.lucode.hackware.magicindicator.MagicIndicator
             android:id="@+id/magic_indicator"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
+            android:layout_height="@dimen/common_navigator_height"
             android:layout_gravity="center_horizontal"
             />
 

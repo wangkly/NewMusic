@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity
 
         titles= new ArrayList<>();
         titles.add("本地音乐");
-        titles.add("网络资源");
+        titles.add("热门歌单");
 
 
         playListFragment = new PlayListFragment();
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity
                 clipPagerTitleView.setTextColor(Color.GRAY);
                 clipPagerTitleView.setClipColor(Color.WHITE);
                 clipPagerTitleView.setText(titles.get(index));
-                clipPagerTitleView.setTextSize(55);
+//                clipPagerTitleView.setTextSize(55);
                 clipPagerTitleView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
