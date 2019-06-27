@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ public class OnlinePlayListFragment extends Fragment {
 
     private int currentPage = 0;
 
+    private SwipeRefreshLayout refreshLayout;
 
     private RecyclerView mRecyclerView;
 
@@ -145,6 +147,8 @@ public class OnlinePlayListFragment extends Fragment {
 
             mRecyclerView = view.findViewById(R.id.onlinePlaylist);
 
+            refreshLayout = view.findViewById(R.id.refreshLayout);
+
             GridLayoutManager layoutManager = new GridLayoutManager(getContext(),3);
 
             mRecyclerView.setLayoutManager(layoutManager);
@@ -153,7 +157,7 @@ public class OnlinePlayListFragment extends Fragment {
 
             OnlineListTask task = new OnlineListTask(listener);
 
-            final StringBuilder sb = new StringBuilder("http://172.19.8.64:3000/top/playlist?limit=30&order=hot&offset=");
+            final StringBuilder sb = new StringBuilder("http://192.168.1.104:3000/top/playlist?limit=30&order=hot&offset=");
 
             task.execute(sb.toString()+"0");
 
@@ -167,6 +171,17 @@ public class OnlinePlayListFragment extends Fragment {
                     currentPage++;
 
                     task.execute(sb.toString()+String.valueOf(currentPage* 30));
+
+
+                }
+            });
+
+
+            refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+
+
 
 
                 }

@@ -1,18 +1,16 @@
 package com.newmusic.wangkly.newmusic.adapter;
 
 import android.support.annotation.NonNull;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.newmusic.wangkly.newmusic.R;
-import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.beans.OnlineSongItem;
 
 import java.util.List;
 
@@ -20,7 +18,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
 
 
-    private List<PlaylistItem> mList;
+    private List<OnlineSongItem> mList;
 
 
     private final int ITEM_VIEWTYPE = 0;//普通列表项的view_type
@@ -29,11 +27,13 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private final int HEADER_VIEWTYPE = 1;//header 项的 view_type;
 
 
+    private View.OnClickListener itemClickListener;
 
 
 
-    public PlaylistDetailAdapter(List<PlaylistItem> mList) {
+    public PlaylistDetailAdapter(List<OnlineSongItem> mList,View.OnClickListener listener) {
         this.mList = mList;
+        itemClickListener = listener;
     }
 
     @NonNull
@@ -41,7 +41,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
 
         if (viewType == ITEM_VIEWTYPE){
-           View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_item,viewGroup,false);
+           View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.online_song_item,viewGroup,false);
 
             return  new ViewHolder(view);
 
@@ -58,22 +58,12 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
 
         if(viewHolder instanceof ViewHolder){
-            final PlaylistItem item = mList.get(i);
+            final OnlineSongItem item = mList.get(i-1);
 
             ViewHolder holder = (ViewHolder) viewHolder;
-            LinearLayout itemLine =  holder.item_line;
 
-//            holder.image.setImageResource(R.drawable.ic_arrow);
-
-            holder.audio_title.setText(item.getTitle());
-            holder.audio_author.setText(item.getArtist());
-
-//            itemLine.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Log.i("RecyclerListAdapter","recycler item click"+ item.getName());
-//                }
-//            });
+            holder.song_name.setText(item.getName());
+            holder.song_author.setText(item.getAuthorName()+"-"+item.getAlbumName());
 
 
         }else if(viewHolder instanceof  HeaderViewHolder){
@@ -111,23 +101,31 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
 
 
+    public OnlineSongItem getItemAtPosition(int position){
+
+        return mList.get(position);
+    }
+
+
+
     class ViewHolder extends RecyclerView.ViewHolder{
 
-        private LinearLayout item_line;
+        private LinearLayout song_item;
 
+        private TextView song_name;
 
-
-        private TextView audio_title;
-
-        private TextView audio_author;
+        private TextView song_author;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            item_line = itemView.findViewById(R.id.item_line);
-//            image = itemView.findViewById(R.id.recycler_img);
+            song_item = itemView.findViewById(R.id.song_item);
 
-            audio_title = itemView.findViewById(R.id.audio_title);
-            audio_author = itemView.findViewById(R.id.audio_author);
+            song_name = itemView.findViewById(R.id.song_name);
+            song_author = itemView.findViewById(R.id.song_author);
+
+            itemView.setTag(this);
+
+            itemView.setOnClickListener(itemClickListener);
         }
     }
 
@@ -148,6 +146,10 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
 
+    public void addItems(List<OnlineSongItem> list){
+
+        mList.addAll(list);
+    }
 
 
 }
