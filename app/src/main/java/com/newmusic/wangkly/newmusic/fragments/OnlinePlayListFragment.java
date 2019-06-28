@@ -1,8 +1,11 @@
 package com.newmusic.wangkly.newmusic.fragments;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,12 +23,14 @@ import com.newmusic.wangkly.newmusic.beans.OnlinePlaylistItem;
 import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
 import com.newmusic.wangkly.newmusic.listener.RecyclerViewScrollListener;
 import com.newmusic.wangkly.newmusic.tasks.OnlineListTask;
+import com.newmusic.wangkly.newmusic.utils.DBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class OnlinePlayListFragment extends Fragment {
@@ -111,6 +116,33 @@ public class OnlinePlayListFragment extends Fragment {
 
                 setTotal(total);
 
+
+                SQLiteDatabase db = new DBHelper(getContext(),"play.db",null,1).getWritableDatabase();
+
+               Iterator<OnlinePlaylistItem> it = itemList.iterator();
+
+               while (it.hasNext()){
+
+                   OnlinePlaylistItem item = it.next();
+
+                   ContentValues value = new ContentValues();
+
+                   value.put("id",item.getId());
+                   value.put("name",item.getName());
+                   value.put("coverImgUrl",item.getCoverImgUrl());
+                   value.put("description",item.getDescription());
+                   value.put("subscribedCount",item.getSubscribedCount());
+
+                    db.insert("online_list",null,value);
+               }
+
+
+
+
+
+
+
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -185,8 +217,15 @@ public class OnlinePlayListFragment extends Fragment {
                 @Override
                 public void onRefresh() {
 
+                    Handler handler = new Handler();
 
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshLayout.setRefreshing(false);
 
+                        }
+                    },1000);
 
                 }
             });

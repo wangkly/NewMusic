@@ -23,6 +23,7 @@ public class MusicService extends Service {
 
     }
 
+
     public class  MyBinder extends Binder {
 
 
@@ -148,6 +149,16 @@ public class MusicService extends Service {
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         Log.i(TAG, " MyService onBind: trigger");
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+
+
+
+            }
+        });
+
         return new MyBinder();
     }
 }
