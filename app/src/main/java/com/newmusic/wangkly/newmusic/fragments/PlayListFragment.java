@@ -162,11 +162,11 @@ public class PlayListFragment extends Fragment {
 
                 mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
-                int duration=item.getDuration();
-                String title = item.getTitle();
-                String albumArt =item.getAlbumArt();
+//                int duration=item.getDuration();
+//                String title = item.getTitle();
+//                String albumArt =item.getAlbumArt();
                 String uri = item.getData();
-                mainActivity.play(uri,albumArt,title,duration,position);
+                mainActivity.play(uri);
 
             }
 
@@ -221,11 +221,11 @@ public class PlayListFragment extends Fragment {
         mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
 
-        int duration=target.getDuration();
-        String title =target.getTitle();
-        String albumArt =target.getAlbumArt();
+//        int duration=target.getDuration();
+//        String title =target.getTitle();
+//        String albumArt =target.getAlbumArt();
         String uri = target.getData();
-        mainActivity.play(uri,albumArt,title,duration,position);
+        mainActivity.play(uri);
 
     }
 

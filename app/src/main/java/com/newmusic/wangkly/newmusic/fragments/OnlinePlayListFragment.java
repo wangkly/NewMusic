@@ -56,10 +56,14 @@ public class OnlinePlayListFragment extends Fragment {
 
             long listId = item.getId();
 
+            String cover = item.getCoverImgUrl();
+
 
             Intent intent = new Intent(getContext(), PlaylistDetailActivity.class);
 
             intent.putExtra("listId",listId);
+
+            intent.putExtra("cover",cover);
 
             startActivity(intent);
 
@@ -157,7 +161,7 @@ public class OnlinePlayListFragment extends Fragment {
 
             OnlineListTask task = new OnlineListTask(listener);
 
-            final StringBuilder sb = new StringBuilder("http://192.168.1.104:3000/top/playlist?limit=30&order=hot&offset=");
+            final StringBuilder sb = new StringBuilder("http://172.19.8.35:3000/top/playlist?limit=30&order=hot&offset=");
 
             task.execute(sb.toString()+"0");
 

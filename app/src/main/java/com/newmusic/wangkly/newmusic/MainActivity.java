@@ -1,9 +1,11 @@
 package com.newmusic.wangkly.newmusic;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,6 +22,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -66,11 +69,9 @@ public class MainActivity extends AppCompatActivity
 
     ViewPager viewPager;
 
-
     Toolbar toolbar;
 
     FragmentManager fragmentManager;
-
 
     MyFragmentPageAdapter fadapter;
 
@@ -87,7 +88,6 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mini_playing_btn;
 
 
-
     PlayListFragment playListFragment;
     OnlinePlayListFragment onlinePlayListFragment;
 //    PlayingFragment playingFragment;
@@ -99,6 +99,11 @@ public class MainActivity extends AppCompatActivity
 
 
     private PermissionHelper mPermissionHelper;
+
+
+    private LocalBroadcastManager broadcastManager;
+
+    private OnlineMusicReceiver receiver;
 
     ServiceConnection  connection= new ServiceConnection() {
         @Override
@@ -123,6 +128,9 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         dbHelper = new DBHelper(MainActivity.this,"play.db",null,1);
+
+        broadcastManager = LocalBroadcastManager.getInstance(MainActivity.this);
+
 
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -159,6 +167,14 @@ public class MainActivity extends AppCompatActivity
                 mPermissionHelper.applyPermissions();
             }
         }
+
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.newmusic.wangkly.newmusic.MainActivity.onlineMusic");
+
+        receiver= new OnlineMusicReceiver();
+        broadcastManager.registerReceiver(receiver,filter);
+
 
     }
 
@@ -364,7 +380,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void play(String uri, String albumArt, String title, int duration, int position){
+    public void play(String uri){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
 //        myBinder.UpdateSeekBarUi(handler);
@@ -461,7 +477,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
 
+        broadcastManager.unregisterReceiver(receiver);
+
         super.onDestroy();
+    }
+
+
+
+
+    //播放网络音乐
+    class OnlineMusicReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String url =   intent.getStringExtra("url");
+            myBinder.initMediaPlayer(url);
+            myBinder.playMusic();
+
+        }
     }
 
 

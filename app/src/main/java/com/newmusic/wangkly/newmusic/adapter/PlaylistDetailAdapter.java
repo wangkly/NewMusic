@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.beans.OnlineSongItem;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -30,10 +31,13 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private View.OnClickListener itemClickListener;
 
 
+    private String coverUrl;
 
-    public PlaylistDetailAdapter(List<OnlineSongItem> mList,View.OnClickListener listener) {
+
+    public PlaylistDetailAdapter(List<OnlineSongItem> mList,String cover,View.OnClickListener listener) {
         this.mList = mList;
         itemClickListener = listener;
+        coverUrl = cover;
     }
 
     @NonNull
@@ -70,7 +74,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
             HeaderViewHolder holder = (HeaderViewHolder) viewHolder;
 
-            holder.image.setImageResource(R.drawable.ic_arrow);
+            Picasso.get().load(coverUrl).into(holder.image);
 
         }
 
