@@ -27,9 +27,6 @@ public class MusicService extends Service {
     public class  MyBinder extends Binder {
 
 
-        public void showToast(){
-            Toast.makeText(MusicService.this.getApplicationContext(),"MyService",Toast.LENGTH_LONG);
-        }
 
         public void UpdateSeekBarUi(final Handler handler){
 
@@ -108,6 +105,16 @@ public class MusicService extends Service {
                 return mediaPlayer.getCurrentPosition();
             }
             return 0;
+        }
+
+
+        public int getDuration(){
+
+            if(null != mediaPlayer){
+                return mediaPlayer.getDuration();
+            }else {
+                return  0;
+            }
         }
 
 

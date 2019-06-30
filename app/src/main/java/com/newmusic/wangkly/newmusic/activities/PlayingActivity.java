@@ -63,7 +63,7 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
 
         setContentView(R.layout.activity_playing);
-        dbHelper = new DBHelper(PlayingActivity.this,"play.db",null,1);
+        dbHelper = new DBHelper(PlayingActivity.this);
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -150,8 +150,6 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
     public void initPlayingSongInfo(){
 
         String title="";
-        String uri="";
-        String albumArt = null;
         int duration =0;
         int position =0;
 //        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,"Idkey=?",new String[]{"1"},null,null,null);
@@ -161,8 +159,6 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
             do {
                 title = cursor.getString(cursor.getColumnIndex("title"));
-                uri = cursor.getString(cursor.getColumnIndex("uri"));
-                albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
                 duration = cursor.getInt(cursor.getColumnIndex("duration"));
                 position = cursor.getInt(cursor.getColumnIndex("position"));
             } while (cursor.moveToNext());
@@ -174,9 +170,9 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
         start.setText("00:00");
 
-        seekBar.setMax(duration);
+        seekBar.setMax(myBinder.getDuration());
 
-        durationMax.setText(formatTime(duration));
+        durationMax.setText(formatTime(myBinder.getDuration()));
 
     }
 

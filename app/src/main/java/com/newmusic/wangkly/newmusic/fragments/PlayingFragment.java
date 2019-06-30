@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.newmusic.wangkly.newmusic.MainActivity;
 import com.newmusic.wangkly.newmusic.R;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.view.CircleImageView;
 
 import java.text.SimpleDateFormat;
@@ -281,7 +282,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
 
 
             case R.id.last:
-                Intent intentLast = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+                Intent intentLast = new Intent(Constant.CHANGE_MUSIC_LOCAL);
                 intentLast.putExtra("type","previous");
                 intentLast.putExtra("position",this.currentPosition);
                 localBroadcastManager.sendBroadcast(intentLast);
@@ -289,7 +290,7 @@ public class PlayingFragment extends Fragment implements View.OnClickListener {
                 break;
 
             case R.id.next:
-                Intent intentNext = new Intent("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+                Intent intentNext = new Intent(Constant.CHANGE_MUSIC_LOCAL);
                 intentNext.putExtra("type","next");
                 intentNext.putExtra("position",this.currentPosition);
                 localBroadcastManager.sendBroadcast(intentNext);

@@ -9,17 +9,6 @@
     tools:showIn="@layout/app_bar_main">
 
 
-    <!--<android.support.design.widget.TabLayout-->
-        <!--android:id="@+id/tabLayout"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="50dp"-->
-        <!--app:tabMode="fixed"-->
-        <!--app:tabGravity="center"-->
-        <!--app:layout_constraintEnd_toEndOf="parent"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent">-->
-
-    <!--</android.support.design.widget.TabLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,34 +41,46 @@
     </android.support.v4.view.ViewPager>
 
 
+    <!--<LinearLayout-->
+        <!--android:id="@+id/frame"-->
+        <!--android:orientation="horizontal"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="50dp">-->
+
+
+        <!--<ImageView-->
+            <!--android:id="@+id/mini_img"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/mini_playing_title"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text=""/>-->
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/mini_playing_btn"-->
+            <!--android:src="@drawable/ic_play"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:background="@android:color/transparent"/>-->
+
+
+    <!--</LinearLayout>-->
+
     <LinearLayout
-        android:id="@+id/frame"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-
-        <ImageView
-            android:id="@+id/mini_img"
-            android:layout_width="50dp"
-            android:layout_height="50dp" />
-
-        <TextView
-            android:id="@+id/mini_playing_title"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text=""/>
-
-        <ImageButton
-            android:id="@+id/mini_playing_btn"
-            android:src="@drawable/ic_play"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@android:color/transparent"/>
-
+            <include layout="@layout/mini_play" />
 
     </LinearLayout>
+
+
+
 
 </android.support.constraint.ConstraintLayout>

@@ -3,9 +3,9 @@ package com.newmusic.wangkly.newmusic.fragments;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,11 +15,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.newmusic.wangkly.newmusic.activities.PlaylistDetailActivity;
+import com.newmusic.wangkly.newmusic.MainActivity;
 import com.newmusic.wangkly.newmusic.R;
+import com.newmusic.wangkly.newmusic.activities.PlaylistDetailActivity;
 import com.newmusic.wangkly.newmusic.adapter.OnlinePlayListAdapter;
 import com.newmusic.wangkly.newmusic.beans.OnlinePlaylistItem;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
 import com.newmusic.wangkly.newmusic.listener.RecyclerViewScrollListener;
 import com.newmusic.wangkly.newmusic.tasks.OnlineListTask;
@@ -66,9 +69,14 @@ public class OnlinePlayListFragment extends Fragment {
 
             Intent intent = new Intent(getContext(), PlaylistDetailActivity.class);
 
-            intent.putExtra("listId",listId);
+            Bundle bundle = new Bundle();
 
-            intent.putExtra("cover",cover);
+            bundle.putBinder("myBinder",((MainActivity)getActivity()).getMyBinder());
+
+            bundle.putLong("listId",listId);
+            bundle.putString("cover",cover);
+
+            intent.putExtras(bundle);
 
             startActivity(intent);
 
@@ -117,7 +125,7 @@ public class OnlinePlayListFragment extends Fragment {
                 setTotal(total);
 
 
-                SQLiteDatabase db = new DBHelper(getContext(),"play.db",null,1).getWritableDatabase();
+                SQLiteDatabase db = new DBHelper(getContext()).getWritableDatabase();
 
                Iterator<OnlinePlaylistItem> it = itemList.iterator();
 
@@ -135,11 +143,6 @@ public class OnlinePlayListFragment extends Fragment {
 
                     db.insert("online_list",null,value);
                }
-
-
-
-
-
 
 
 
@@ -171,7 +174,6 @@ public class OnlinePlayListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAdapter = new OnlinePlayListAdapter(new ArrayList<OnlinePlaylistItem>(),clickListener);
 
     }
 
@@ -189,13 +191,25 @@ public class OnlinePlayListFragment extends Fragment {
 
             mRecyclerView.setLayoutManager(layoutManager);
 
+
+            //查询本地是否有缓存歌单，如果没有在去网络查询
+            List<OnlinePlaylistItem> list = queryPlayListLocalCache();
+
+            mAdapter = new OnlinePlayListAdapter(list,clickListener);
+
+
             mRecyclerView.setAdapter(mAdapter);
+            final StringBuilder sb = new StringBuilder(Constant.HOST_URL);
 
-            OnlineListTask task = new OnlineListTask(listener);
+            sb.append("/top/playlist?limit=30&order=hot&offset=");
 
-            final StringBuilder sb = new StringBuilder("http://172.19.8.35:3000/top/playlist?limit=30&order=hot&offset=");
+            if(list.size() == 0){
+                OnlineListTask task = new OnlineListTask(listener);
 
-            task.execute(sb.toString()+"0");
+                task.execute(sb.toString()+"0");
+            }
+
+
 
 
             mRecyclerView.addOnScrollListener(new RecyclerViewScrollListener() {
@@ -216,17 +230,15 @@ public class OnlinePlayListFragment extends Fragment {
             refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
+                    clearPlaylistCache(); //清空本地缓存
 
-                    Handler handler = new Handler();
+                    OnlineListTask task = new OnlineListTask(listener);
 
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            refreshLayout.setRefreshing(false);
+                    task.execute(sb.toString()+"0");
 
-                        }
-                    },1000);
-
+                    currentPage = 0;
+                   refreshLayout.setRefreshing(false);
+                    Toast.makeText(getContext(),"刷新成功",Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -235,6 +247,44 @@ public class OnlinePlayListFragment extends Fragment {
     }
 
 
+
+    public List<OnlinePlaylistItem> queryPlayListLocalCache(){
+
+        List<OnlinePlaylistItem> list = new ArrayList<>();
+
+        DBHelper helper = DBHelper.getInstance(getContext());
+
+        Cursor cursor =helper.getWritableDatabase().query("online_list",null,null,null,null,null,null);
+
+        if(null != cursor && cursor.moveToFirst()){
+
+            while (cursor.moveToNext()){
+
+                OnlinePlaylistItem item = new OnlinePlaylistItem();
+                item.setId(cursor.getLong(cursor.getColumnIndex("id")));
+                item.setName(cursor.getString(cursor.getColumnIndex("name")));
+                item.setCoverImgUrl(cursor.getString(cursor.getColumnIndex("coverImgUrl")));
+                item.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                item.setSubscribedCount(cursor.getInt(cursor.getColumnIndex("subscribedCount")));
+
+                list.add(item);
+            }
+
+
+        }
+
+
+        return list;
+    }
+
+
+    public void clearPlaylistCache(){
+
+        DBHelper helper = DBHelper.getInstance(getContext());
+
+        helper.getWritableDatabase().delete("online_list",null,null);
+
+    }
 
 
     public void setTotal(int total){

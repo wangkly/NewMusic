@@ -13,15 +13,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -34,7 +31,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -42,9 +38,9 @@ import android.widget.TextView;
 
 import com.newmusic.wangkly.newmusic.activities.PlayingActivity;
 import com.newmusic.wangkly.newmusic.adapter.MyFragmentPageAdapter;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.fragments.OnlinePlayListFragment;
 import com.newmusic.wangkly.newmusic.fragments.PlayListFragment;
-import com.newmusic.wangkly.newmusic.fragments.PlayingFragment;
 import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
 import com.newmusic.wangkly.newmusic.utils.PermissionHelper;
@@ -93,7 +89,15 @@ public class MainActivity extends AppCompatActivity
 //    PlayingFragment playingFragment;
 
 
-    MusicService.MyBinder myBinder;
+    public MusicService.MyBinder myBinder;
+
+    public MusicService.MyBinder getMyBinder() {
+        return myBinder;
+    }
+
+    public void setMyBinder(MusicService.MyBinder myBinder) {
+        this.myBinder = myBinder;
+    }
 
     public DBHelper dbHelper;
 
@@ -103,13 +107,14 @@ public class MainActivity extends AppCompatActivity
 
     private LocalBroadcastManager broadcastManager;
 
-    private OnlineMusicReceiver receiver;
+    private MainActivityReceiver receiver;
+
 
     ServiceConnection  connection= new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             myBinder = (MusicService.MyBinder) service;
-            getLastPlayingInfo();
+            refreshPlayingInfo(true);
         }
 
         @Override
@@ -127,7 +132,7 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        dbHelper = new DBHelper(MainActivity.this,"play.db",null,1);
+        dbHelper = new DBHelper(MainActivity.this);
 
         broadcastManager = LocalBroadcastManager.getInstance(MainActivity.this);
 
@@ -168,13 +173,12 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-
+        //注册网络歌单播放监听
         IntentFilter filter = new IntentFilter();
-        filter.addAction("com.newmusic.wangkly.newmusic.MainActivity.onlineMusic");
+        filter.addAction(Constant.MAIN_ACTIVITY_ACTION);
 
-        receiver= new OnlineMusicReceiver();
+        receiver= new MainActivityReceiver();
         broadcastManager.registerReceiver(receiver,filter);
-
 
     }
 
@@ -197,11 +201,12 @@ public class MainActivity extends AppCompatActivity
         titles= new ArrayList<>();
         titles.add("本地音乐");
         titles.add("热门歌单");
+        titles.add("电台");
 
 
         playListFragment = new PlayListFragment();
         onlinePlayListFragment = new OnlinePlayListFragment();
-//        playingFragment = new PlayingFragment();
+
 
         fragments.add(playListFragment);
         fragments.add(onlinePlayListFragment);
@@ -256,22 +261,9 @@ public class MainActivity extends AppCompatActivity
         ViewPagerHelper.bind(magicIndicator,viewPager);
 
 
-//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//        fragmentTransaction.add(R.id.frame,playingFragment);
-//        fragmentTransaction.commit();
-
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-//                ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
-//                layoutParams.height =WindowManager.LayoutParams.MATCH_PARENT;
-//                frame.setLayoutParams(layoutParams);
-//                isfullScreenMode =true;
-//
-//                playingFragment.hideMiniShowFull();
-//                toolbar.setVisibility(View.GONE);
-//                return false;
 
 
                 Intent intent = new Intent(MainActivity.this, PlayingActivity.class);
@@ -317,7 +309,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    public void getLastPlayingInfo(){
+    public void refreshPlayingInfo(Boolean initFlag){
         String title="";
         String uri="";
         String albumArt = null;
@@ -338,8 +330,16 @@ public class MainActivity extends AppCompatActivity
 
 
         if(null != uri && !"".equals(uri)){
-            myBinder.initMediaPlayer(uri);
-//            myBinder.UpdateSeekBarUi(handler);
+
+            if(initFlag){
+                myBinder.initMediaPlayer(uri);
+            }
+            //是否正在播放
+            if(myBinder.isPlaying()){
+                mini_playing_btn.setImageResource(R.drawable.ic_pause);
+            }else{
+                mini_playing_btn.setImageResource(R.drawable.ic_play);
+            }
 
             if(null == albumArt){
                 mini_img.setImageResource(R.drawable.music_img);
@@ -349,11 +349,6 @@ public class MainActivity extends AppCompatActivity
             }
 
             mini_playing_title.setText(title);
-
-
-//            playingFragment.preparePlayingInfo(albumArt,title,position);
-//            playingFragment.initFullScreenProps(title,duration,albumArt);
-
 
         }
 
@@ -383,12 +378,7 @@ public class MainActivity extends AppCompatActivity
     public void play(String uri){
         myBinder.initMediaPlayer(uri);
         myBinder.playMusic();
-//        myBinder.UpdateSeekBarUi(handler);
 
-
-
-//        playingFragment.setPlayingInfo(albumArt,title,position);
-//        playingFragment.initFullScreenProps(title,duration,albumArt);
     }
 
 
@@ -486,15 +476,37 @@ public class MainActivity extends AppCompatActivity
 
 
     //播放网络音乐
-    class OnlineMusicReceiver extends BroadcastReceiver{
+    class MainActivityReceiver extends BroadcastReceiver{
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String url =   intent.getStringExtra("url");
-            myBinder.initMediaPlayer(url);
-            myBinder.playMusic();
+            String type = intent.getStringExtra("type");
 
+            switch (type){
+
+
+                case Constant.ONLINE_MUSIC_PLAY_ACTION :
+
+                    String url =   intent.getStringExtra("url");
+                    myBinder.initMediaPlayer(url);
+                    myBinder.playMusic();
+
+                    break;
+
+                case Constant.REFRESH_PALYINGINFO:
+
+                    refreshPlayingInfo(false);
+
+                    break;
+
+                default:
+
+
+                    break;
+
+
+            }
         }
     }
 

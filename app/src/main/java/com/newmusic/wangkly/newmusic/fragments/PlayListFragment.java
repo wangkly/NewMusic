@@ -25,6 +25,7 @@ import com.newmusic.wangkly.newmusic.MainActivity;
 import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.adapter.PlainRecyclerViewAdapter;
 import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.listener.RecyclerViewItemTouchListener;
 import com.newmusic.wangkly.newmusic.utils.MediaUtil;
 
@@ -56,7 +57,7 @@ public class PlayListFragment extends Fragment {
         localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.newmusic.wangkly.newmusic.MainActivity.changeMedia");
+        intentFilter.addAction(Constant.CHANGE_MUSIC_LOCAL);
         localBroadcastManager= LocalBroadcastManager.getInstance(getActivity());
         changeMediaReceiver = new ChangeMediaReceiver();
         localBroadcastManager.registerReceiver(changeMediaReceiver,intentFilter);
@@ -79,48 +80,6 @@ public class PlayListFragment extends Fragment {
 
 
     public  void initAudioList(View view){
-//        ListView listview = view.findViewById(R.id.playlist);
-//        mRecyclerView = view.findViewById(R.id.playlist);
-
-//        audioList = this.getAudioList();
-
-//        PlaylistSimpleAdapter playlistSimpleAdapter = new PlaylistSimpleAdapter(view.getContext(),audioList,
-//                R.layout.audio_item,new String[]{"title","artist"},new int[]{R.id.audio_title,R.id.audio_author});
-
-//        listview.setAdapter(playlistSimpleAdapter);
-//
-//        listview.setOnItemClickListener(new ListView.OnItemClickListener(){
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                ListView listview = (ListView) parent;
-//
-//                Map<String,Object> data = (Map<String, Object>) listview.getItemAtPosition(position);
-//
-//                ContentValues values = new ContentValues();
-//
-//                values.put("title",(String)data.get("title"));
-//                values.put("position",position);
-//                values.put("duration",(int) data.get("duration"));
-//                values.put("uri",(String)data.get("data"));
-//                values.put("artist",(String)data.get("artist"));
-//                values.put("albumArt",(String)data.get("albumArt"));
-//
-//                Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
-//                if(cursor.getCount() > 0){
-//                    mainActivity.dbHelper.getWritableDatabase().delete("playing",null,null);
-//                }
-//
-//                mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
-//
-//
-//                int duration=(int) data.get("duration");
-//                String title =(String)data.get("title");
-//                String albumArt =(String)data.get("albumArt");
-//                String uri = (String)data.get("data");
-//                mainActivity.play(uri,albumArt,title,duration,position);
-//            }
-//        });
-
 
         mRecyclerView = view.findViewById(R.id.playlist);
 
@@ -162,11 +121,15 @@ public class PlayListFragment extends Fragment {
 
                 mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
-//                int duration=item.getDuration();
-//                String title = item.getTitle();
-//                String albumArt =item.getAlbumArt();
+
                 String uri = item.getData();
                 mainActivity.play(uri);
+
+
+                //通知刷新正在播放音乐信息
+                Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                intent.putExtra("type",Constant.REFRESH_PALYINGINFO);
+                localBroadcastManager.sendBroadcast(intent);
 
             }
 

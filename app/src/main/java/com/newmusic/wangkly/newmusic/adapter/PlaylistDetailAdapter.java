@@ -18,7 +18,6 @@ import java.util.List;
 public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
-
     private List<OnlineSongItem> mList;
 
 
@@ -155,5 +154,14 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mList.addAll(list);
     }
 
+
+
+    public List<OnlineSongItem> getmList() {
+        return mList;
+    }
+
+    public void setmList(List<OnlineSongItem> mList) {
+        this.mList = mList;
+    }
 
 }

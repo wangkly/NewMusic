@@ -1,6 +1,12 @@
 package com.newmusic.wangkly.newmusic.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,14 +15,20 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.adapter.PlaylistDetailAdapter;
 import com.newmusic.wangkly.newmusic.beans.OnlineSongItem;
 import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
+import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.tasks.OnlineListTask;
+import com.newmusic.wangkly.newmusic.utils.DBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +49,22 @@ public class PlaylistDetailActivity extends AppCompatActivity {
     private LocalBroadcastManager localBroadcastManager;
 
 
+    private PlaylistDetailReceiver receiver;
+
+
+    private DBHelper dbHelper;
+
+
+    private ImageView mini_img;
+
+    private TextView mini_playing_title;
+
+    private ImageButton mini_playing_btn;
+
+
+    public MusicService.MyBinder myBinder;
+
+
     View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -49,7 +77,9 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
             long songId = item.getId();
 
-            StringBuilder sb = new StringBuilder("http://172.19.8.35:3000/song/url?id=");
+            StringBuilder sb = new StringBuilder(Constant.HOST_URL);
+
+            sb.append("/song/url?id=");
 
             OnlineListTask task = new OnlineListTask(new QueryResultListener() {
                 @Override
@@ -64,11 +94,18 @@ public class PlaylistDetailActivity extends AppCompatActivity {
                         Log.i(TAG,url);
 
                         if(null != url){
-                            Intent intent = new Intent();
-                            intent.setAction("com.newmusic.wangkly.newmusic.MainActivity.onlineMusic");
+                            Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                            intent.putExtra("type",Constant.ONLINE_MUSIC_PLAY_ACTION);
                             intent.putExtra("url",url);
 
                             localBroadcastManager.sendBroadcast(intent);
+
+                            //获取当前歌曲播放列表
+                            List<OnlineSongItem> mlist =detailAdapter.getmList();
+                            //存到数据库中
+
+
+
 
                         }else {
                             Toast.makeText(PlaylistDetailActivity.this,"无法播放",Toast.LENGTH_SHORT).show();
@@ -153,19 +190,26 @@ public class PlaylistDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_detail);
+        detail_list = findViewById(R.id.detail_list);
+        mini_img = findViewById(R.id.mini_img);
+        mini_playing_title = findViewById(R.id.mini_playing_title);
+        mini_playing_btn = findViewById(R.id.mini_playing_btn);
+
+
+        receiver = new PlaylistDetailReceiver();
 
         localBroadcastManager = LocalBroadcastManager.getInstance(PlaylistDetailActivity.this);
 
 
-        detail_list = findViewById(R.id.detail_list);
-
         Intent intent = getIntent();
 
-        long listId = intent.getLongExtra("listId",-1l);
+        Bundle bundle =intent.getExtras();
 
+        myBinder= (MusicService.MyBinder) bundle.getBinder("myBinder");
 
-        String cover = intent.getStringExtra("cover");
+        long listId = bundle.getLong("listId",-1l);
 
+        String cover = bundle.getString("cover");
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(PlaylistDetailActivity.this);
 
@@ -179,12 +223,106 @@ public class PlaylistDetailActivity extends AppCompatActivity {
         detail_list.addItemDecoration(new DividerItemDecoration(PlaylistDetailActivity.this,DividerItemDecoration.VERTICAL));
 
 
-        StringBuilder sb = new StringBuilder("http://172.19.8.35:3000/playlist/detail?id=");
+        StringBuilder sb = new StringBuilder(Constant.HOST_URL);
+
+        sb.append("/playlist/detail?id=");
 
 
         OnlineListTask task = new OnlineListTask(listener);
 
         task.execute(sb.toString()+String.valueOf(listId));
 
+
+        IntentFilter filter = new IntentFilter();
+
+        filter.addAction(Constant.MAIN_ACTIVITY_ACTION);
+
+        localBroadcastManager.registerReceiver(receiver,filter);
+
+
+
+//        refreshPlayingInfo(false);
+
     }
+
+
+
+    //更新播放窗口
+    class  PlaylistDetailReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String type = intent.getStringExtra("type");
+
+
+            switch (type){
+
+                case Constant.REFRESH_PALYINGINFO:
+
+                    refreshPlayingInfo(false);
+
+                    break;
+
+
+                default:
+
+
+                    break;
+            }
+
+
+        }
+    }
+
+
+
+    public void refreshPlayingInfo(Boolean initFlag){
+        String title="";
+        String uri="";
+        String albumArt = null;
+
+//        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,"Idkey=?",new String[]{"1"},null,null,null);
+        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+
+        if(cursor.moveToFirst()){
+
+            do {
+                title = cursor.getString(cursor.getColumnIndex("title"));
+                uri = cursor.getString(cursor.getColumnIndex("uri"));
+                albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
+
+            } while (cursor.moveToNext());
+
+        }
+
+
+        if(null != uri && !"".equals(uri)){
+
+            if(initFlag){
+                myBinder.initMediaPlayer(uri);
+            }
+            //是否正在播放
+            if(myBinder.isPlaying()){
+                mini_playing_btn.setImageResource(R.drawable.ic_pause);
+            }else{
+                mini_playing_btn.setImageResource(R.drawable.ic_play);
+            }
+
+            if(null == albumArt){
+                mini_img.setImageResource(R.drawable.music_img);
+            }else{
+                Bitmap bm = BitmapFactory.decodeFile(albumArt);
+                mini_img.setImageBitmap(bm);
+            }
+
+            mini_playing_title.setText(title);
+
+        }
+
+    }
+
+
+
+
 }
