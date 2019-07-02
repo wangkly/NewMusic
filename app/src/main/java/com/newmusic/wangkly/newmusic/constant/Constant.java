@@ -6,7 +6,7 @@ public class Constant {
     public static final String MAIN_ACTIVITY_ACTION ="mainActivityAction";
 
     //音乐服务host地址
-    public static final String HOST_URL = "http://192.168.1.104:3000";
+    public static final String HOST_URL = "http://172.19.8.16:3000";
 
     //播放网络歌单broadcast receiver action
     public static final String ONLINE_MUSIC_PLAY_ACTION = "com.newmusic.wangkly.newmusic.MainActivity.onlineMusic";

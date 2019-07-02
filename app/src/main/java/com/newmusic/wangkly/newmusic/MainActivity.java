@@ -44,6 +44,7 @@ import com.newmusic.wangkly.newmusic.fragments.PlayListFragment;
 import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
 import com.newmusic.wangkly.newmusic.utils.PermissionHelper;
+import com.squareup.picasso.Picasso;
 
 import net.lucode.hackware.magicindicator.MagicIndicator;
 import net.lucode.hackware.magicindicator.ViewPagerHelper;
@@ -344,8 +345,15 @@ public class MainActivity extends AppCompatActivity
             if(null == albumArt){
                 mini_img.setImageResource(R.drawable.music_img);
             }else{
-                Bitmap bm = BitmapFactory.decodeFile(albumArt);
-                mini_img.setImageBitmap(bm);
+
+                if(albumArt.indexOf("http") > -1){
+                    Picasso.get().load(albumArt).resize(2048, 1600).onlyScaleDown().into(mini_img);
+                }else{
+                    Bitmap bm = BitmapFactory.decodeFile(albumArt);
+                    mini_img.setImageBitmap(bm);
+
+                }
+
             }
 
             mini_playing_title.setText(title);
@@ -491,6 +499,8 @@ public class MainActivity extends AppCompatActivity
                     String url =   intent.getStringExtra("url");
                     myBinder.initMediaPlayer(url);
                     myBinder.playMusic();
+
+                    refreshPlayingInfo(false);
 
                     break;
 

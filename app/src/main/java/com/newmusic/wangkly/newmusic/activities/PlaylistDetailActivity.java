@@ -1,6 +1,7 @@
 package com.newmusic.wangkly.newmusic.activities;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -71,9 +72,9 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
             RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
 
-            int postion = viewHolder.getAdapterPosition();
+            final int position = viewHolder.getAdapterPosition();
 
-            OnlineSongItem item  = detailAdapter. getItemAtPosition(postion);
+            final OnlineSongItem item  = detailAdapter. getItemAtPosition(position);
 
             long songId = item.getId();
 
@@ -94,16 +95,41 @@ public class PlaylistDetailActivity extends AppCompatActivity {
                         Log.i(TAG,url);
 
                         if(null != url){
-                            Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
-                            intent.putExtra("type",Constant.ONLINE_MUSIC_PLAY_ACTION);
-                            intent.putExtra("url",url);
 
-                            localBroadcastManager.sendBroadcast(intent);
+
+                            //保存当前播放歌曲信息
+                            ContentValues values = new ContentValues();
+                            values.put("title",item.getName());
+                            values.put("position",position);
+                            values.put("duration",0);
+                            values.put("uri",url);
+                            values.put("artist",item.getAuthorName());
+                            values.put("albumArt",item.getAlbumPicUrl());
+
+
+                            Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+                            if(cursor.getCount() > 0){
+                                dbHelper.getWritableDatabase().delete("playing",null,null);
+                            }
+
+                            dbHelper.getWritableDatabase().insert("playing",null,values);
+
+//                            //通知刷新正在播放音乐信息
+//                            Intent refresh = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+//                            intent.putExtra("type",Constant.REFRESH_PALYINGINFO);
+//                            localBroadcastManager.sendBroadcast(refresh);
+
+
 
                             //获取当前歌曲播放列表
                             List<OnlineSongItem> mlist =detailAdapter.getmList();
                             //存到数据库中
 
+
+                            Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                            intent.putExtra("type",Constant.ONLINE_MUSIC_PLAY_ACTION);
+                            intent.putExtra("url",url);
+                            localBroadcastManager.sendBroadcast(intent);
 
 
 
@@ -194,6 +220,8 @@ public class PlaylistDetailActivity extends AppCompatActivity {
         mini_img = findViewById(R.id.mini_img);
         mini_playing_title = findViewById(R.id.mini_playing_title);
         mini_playing_btn = findViewById(R.id.mini_playing_btn);
+
+        dbHelper = DBHelper.getInstance(PlaylistDetailActivity.this);
 
 
         receiver = new PlaylistDetailReceiver();
