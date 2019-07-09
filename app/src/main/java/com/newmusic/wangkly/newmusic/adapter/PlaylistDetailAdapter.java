@@ -24,36 +24,25 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private final int ITEM_VIEWTYPE = 0;//普通列表项的view_type
 
 
-    private final int HEADER_VIEWTYPE = 1;//header 项的 view_type;
+//    private final int HEADER_VIEWTYPE = 1;//header 项的 view_type;
 
 
     private View.OnClickListener itemClickListener;
 
 
-    private String coverUrl;
 
-
-    public PlaylistDetailAdapter(List<OnlineSongItem> mList,String cover,View.OnClickListener listener) {
+    public PlaylistDetailAdapter(List<OnlineSongItem> mList,View.OnClickListener listener) {
         this.mList = mList;
         itemClickListener = listener;
-        coverUrl = cover;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
 
-        if (viewType == ITEM_VIEWTYPE){
            View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.online_song_item,viewGroup,false);
 
             return  new ViewHolder(view);
-
-        }else {
-
-            View Header = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.playlist_detail_header,viewGroup,false);
-            return  new HeaderViewHolder(Header);
-
-        }
 
     }
 
@@ -61,19 +50,13 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
 
         if(viewHolder instanceof ViewHolder){
-            final OnlineSongItem item = mList.get(i-1);
+            final OnlineSongItem item = mList.get(i);
 
             ViewHolder holder = (ViewHolder) viewHolder;
 
             holder.song_name.setText(item.getName());
             holder.song_author.setText(item.getAuthorName()+"-"+item.getAlbumName());
 
-
-        }else if(viewHolder instanceof  HeaderViewHolder){
-
-            HeaderViewHolder holder = (HeaderViewHolder) viewHolder;
-
-            Picasso.get().load(coverUrl).into(holder.image);
 
         }
 
@@ -85,21 +68,12 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public int getItemViewType(int position) {
 
-
-        if(position == 0){
-
-            return HEADER_VIEWTYPE;
-        }else{
             return ITEM_VIEWTYPE;
-        }
-
-
-
     }
 
     @Override
     public int getItemCount() {
-        return mList.size()+1;
+        return mList.size();
     }
 
 
@@ -132,21 +106,6 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
-
-    class HeaderViewHolder extends RecyclerView.ViewHolder{
-
-        LinearLayout detail_header;
-
-        private ImageView image;
-
-
-        public HeaderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            detail_header = itemView.findViewById(R.id.detail_header);
-            image = itemView.findViewById(R.id.header_bg);
-
-        }
-    }
 
 
     public void addItems(List<OnlineSongItem> list){

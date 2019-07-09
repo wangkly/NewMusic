@@ -66,6 +66,7 @@ public class OnlinePlayListFragment extends Fragment {
 
             String cover = item.getCoverImgUrl();
 
+            String name = item.getName();
 
             Intent intent = new Intent(getContext(), PlaylistDetailActivity.class);
 
@@ -75,6 +76,7 @@ public class OnlinePlayListFragment extends Fragment {
 
             bundle.putLong("listId",listId);
             bundle.putString("cover",cover);
+            bundle.putString("name",name);
 
             intent.putExtras(bundle);
 

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -30,6 +31,7 @@ import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
 import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.tasks.OnlineListTask;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,6 +66,15 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
 
     public MusicService.MyBinder myBinder;
+
+
+    public Toolbar detail_toolbar;
+
+
+    public ImageView header_bg;
+
+
+    private long listId;
 
 
     View.OnClickListener clickListener = new View.OnClickListener() {
@@ -114,23 +125,18 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
                             dbHelper.getWritableDatabase().insert("playing",null,values);
 
-//                            //通知刷新正在播放音乐信息
-//                            Intent refresh = new Intent(Constant.MAIN_ACTIVITY_ACTION);
-//                            intent.putExtra("type",Constant.REFRESH_PALYINGINFO);
-//                            localBroadcastManager.sendBroadcast(refresh);
-
-
 
                             //获取当前歌曲播放列表
                             List<OnlineSongItem> mlist =detailAdapter.getmList();
                             //存到数据库中
+
+                            saveOnlinePlayingInfo(mlist);
 
 
                             Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
                             intent.putExtra("type",Constant.ONLINE_MUSIC_PLAY_ACTION);
                             intent.putExtra("url",url);
                             localBroadcastManager.sendBroadcast(intent);
-
 
 
                         }else {
@@ -156,6 +162,59 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
         }
     };
+
+
+    //保存网络歌单播放信息
+    public void saveOnlinePlayingInfo(List<OnlineSongItem> mlist){
+        //查询上次存的播放歌单信息
+       Cursor cursor = dbHelper.getWritableDatabase().query("playing_list_info",null,null,null,null,null,null);
+
+       if(null != cursor && cursor.getCount() > 0){
+
+           cursor.moveToFirst();
+
+           Long id =  cursor.getLong(cursor.getColumnIndex("listId"));
+
+           if(id != listId){
+                //清空
+               dbHelper.getWritableDatabase().delete("playing_list_info",null,null);
+
+               ContentValues info = new ContentValues();
+               info.put("listId",listId);
+               dbHelper.getWritableDatabase().insert("playing_list_info",null,info);
+
+               insertPlayingSong(mlist);
+           }
+
+
+       }else {
+           //未查询到，认为之前么有播放过网络歌单
+           ContentValues info = new ContentValues();
+           info.put("listId",listId);
+           dbHelper.getWritableDatabase().insert("playing_list_info",null,info);
+
+           insertPlayingSong(mlist);
+
+
+       }
+
+    }
+
+
+    public void insertPlayingSong(List<OnlineSongItem> mlist){
+        for (OnlineSongItem item : mlist){
+            ContentValues song = new ContentValues();
+            song.put("id",item.getId());
+            song.put("name",item.getName());
+            song.put("authorName",item.getAuthorName());
+            song.put("albumName",item.getAlbumName());
+            song.put("albumPicUrl",item.getAlbumPicUrl());
+
+            dbHelper.getWritableDatabase().insert("online_playing_list",null,song);
+
+        }
+
+    }
 
 
 
@@ -216,6 +275,11 @@ public class PlaylistDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_detail);
+
+        detail_toolbar = findViewById(R.id.detail_toolbar);
+        header_bg = findViewById(R.id.header_bg);
+
+
         detail_list = findViewById(R.id.detail_list);
         mini_img = findViewById(R.id.mini_img);
         mini_playing_title = findViewById(R.id.mini_playing_title);
@@ -235,16 +299,23 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
         myBinder= (MusicService.MyBinder) bundle.getBinder("myBinder");
 
-        long listId = bundle.getLong("listId",-1l);
+        listId = bundle.getLong("listId",-1l);
 
         String cover = bundle.getString("cover");
+
+        String name  = bundle.getString("name");
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(PlaylistDetailActivity.this);
 
         detail_list.setLayoutManager(layoutManager);
 
 
-        detailAdapter = new PlaylistDetailAdapter(new ArrayList<OnlineSongItem>(),cover,clickListener);
+        detailAdapter = new PlaylistDetailAdapter(new ArrayList<OnlineSongItem>(),clickListener);
+
+        detail_toolbar.setTitle(name);
+
+        Picasso.get().load(cover).into(header_bg);
+
 
         detail_list.setAdapter(detailAdapter);
 

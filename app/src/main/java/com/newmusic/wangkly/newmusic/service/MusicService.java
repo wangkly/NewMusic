@@ -161,7 +161,7 @@ public class MusicService extends Service {
             @Override
             public void onCompletion(MediaPlayer mp) {
 
-
+                Log.i(TAG,"音乐播放结束！！！");
 
             }
         });
