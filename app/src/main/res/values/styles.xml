@@ -18,4 +18,16 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+
+    <style name="CToolbar_text">
+        <item name="android:textSize">14sp</item>
+        <item name="android:color">@color/white</item>
+    </style>
+
+
+    <style name="EToolbar_text">
+        <item name="android:textSize">18sp</item>
+        <item name="android:color">@color/white</item>
+    </style>
+
 </resources>

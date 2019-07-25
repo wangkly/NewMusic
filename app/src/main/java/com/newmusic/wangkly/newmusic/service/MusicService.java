@@ -6,8 +6,10 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.newmusic.wangkly.newmusic.constant.Constant;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,6 +43,8 @@ public class MusicService extends Service {
                             if(null != mediaPlayer && mediaPlayer.isPlaying()){
                                 int progress = mediaPlayer.getCurrentPosition();
                                 handler.sendEmptyMessage(progress);
+                            }else{
+                                timer.cancel();
                             }
                         }
                     },0L,1000L);
@@ -51,7 +55,7 @@ public class MusicService extends Service {
 
 
         public void initMediaPlayer(String uri){
-            if(mediaPlayer.isPlaying()){
+            if(null != mediaPlayer){
                 mediaPlayer.reset();
             }
             try {
@@ -162,6 +166,12 @@ public class MusicService extends Service {
             public void onCompletion(MediaPlayer mp) {
 
                 Log.i(TAG,"音乐播放结束！！！");
+                //发送播放下一首歌曲通知
+                Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+
+                intent.putExtra("type",Constant.PLAY_NEXT);
+
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
             }
         });

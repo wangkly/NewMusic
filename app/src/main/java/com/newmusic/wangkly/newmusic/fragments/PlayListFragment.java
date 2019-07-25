@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,7 +27,6 @@ import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.listener.RecyclerViewItemTouchListener;
 import com.newmusic.wangkly.newmusic.utils.MediaUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PlayListFragment extends Fragment {
@@ -83,7 +80,7 @@ public class PlayListFragment extends Fragment {
 
         mRecyclerView = view.findViewById(R.id.playlist);
 
-        List<PlaylistItem> audioList  = MediaUtil.getAudioList(getContext());
+        audioList  = MediaUtil.getAudioList(getContext());
 
         final PlainRecyclerViewAdapter adapter = new PlainRecyclerViewAdapter(audioList);
 
@@ -106,13 +103,14 @@ public class PlayListFragment extends Fragment {
                 PlaylistItem item = adapter.getItemAtPosition(position);
 
                 ContentValues values = new ContentValues();
-
+                values.put("id",item.getId());
                 values.put("title",item.getTitle());
                 values.put("position",position);
                 values.put("duration",item.getDuration());
                 values.put("uri",item.getData());
                 values.put("artist",item.getArtist());
                 values.put("albumArt",item.getAlbumArt());
+                values.put("type",0);//本地歌曲
 
                 Cursor cursor = mainActivity.dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
                 if(cursor.getCount() > 0){
@@ -184,11 +182,10 @@ public class PlayListFragment extends Fragment {
         mainActivity.dbHelper.getWritableDatabase().insert("playing",null,values);
 
 
-//        int duration=target.getDuration();
-//        String title =target.getTitle();
-//        String albumArt =target.getAlbumArt();
         String uri = target.getData();
         mainActivity.play(uri);
+
+        mainActivity.refreshPlayingInfo(false);
 
     }
 

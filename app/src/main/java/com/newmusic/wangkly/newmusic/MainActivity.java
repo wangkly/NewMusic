@@ -3,6 +3,7 @@ package com.newmusic.wangkly.newmusic;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -26,6 +27,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -35,13 +37,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.newmusic.wangkly.newmusic.activities.PlayingActivity;
 import com.newmusic.wangkly.newmusic.adapter.MyFragmentPageAdapter;
 import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.fragments.OnlinePlayListFragment;
 import com.newmusic.wangkly.newmusic.fragments.PlayListFragment;
+import com.newmusic.wangkly.newmusic.interfaces.QueryResultListener;
 import com.newmusic.wangkly.newmusic.service.MusicService;
+import com.newmusic.wangkly.newmusic.tasks.OnlineListTask;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
 import com.newmusic.wangkly.newmusic.utils.PermissionHelper;
 import com.squareup.picasso.Picasso;
@@ -55,6 +60,10 @@ import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerInd
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ClipPagerTitleView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +96,6 @@ public class MainActivity extends AppCompatActivity
 
     PlayListFragment playListFragment;
     OnlinePlayListFragment onlinePlayListFragment;
-//    PlayingFragment playingFragment;
 
 
     public MusicService.MyBinder myBinder;
@@ -96,9 +104,6 @@ public class MainActivity extends AppCompatActivity
         return myBinder;
     }
 
-    public void setMyBinder(MusicService.MyBinder myBinder) {
-        this.myBinder = myBinder;
-    }
 
     public DBHelper dbHelper;
 
@@ -199,7 +204,7 @@ public class MainActivity extends AppCompatActivity
 
         mini_playing_btn = findViewById(R.id.mini_playing_btn);
 
-        titles= new ArrayList<>();
+        titles = new ArrayList<>();
         titles.add("本地音乐");
         titles.add("热门歌单");
         titles.add("电台");
@@ -308,8 +313,10 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
+    /**
+     * 刷新activity 下方的mini播放窗口播放信息
+     * @param initFlag 初始化时 为true,之后为false
+     */
     public void refreshPlayingInfo(Boolean initFlag){
         String title="";
         String uri="";
@@ -360,6 +367,10 @@ public class MainActivity extends AppCompatActivity
 
         }
 
+        //通知播放页做刷新
+        Intent intent = new Intent(Constant.PLAYING_ACTIVITY_REFRESH);
+        broadcastManager.sendBroadcast(intent);
+
     }
 
 
@@ -408,18 +419,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        }else if(isfullScreenMode){
-            final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-            ViewGroup.LayoutParams layoutParams = frame.getLayoutParams();
-            layoutParams.height = (int)(50*scale+0.5f);
-
-            frame.setLayoutParams(layoutParams);
-            isfullScreenMode =false;
-
-//            playingFragment.hideFullShowMini();
-            toolbar.setVisibility(View.VISIBLE);
-
-        } else {
+        }else {
             super.onBackPressed();
         }
     }
@@ -510,6 +510,20 @@ public class MainActivity extends AppCompatActivity
 
                     break;
 
+
+                case Constant.PLAY_NEXT:
+
+                    findPreviousOrNext(true);
+
+
+                    break;
+
+                case Constant.PLAY_PREVIOUS:
+
+                    findPreviousOrNext(false);
+
+                    break;
+
                 default:
 
 
@@ -518,6 +532,157 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
+    }
+
+
+    /**
+     * 找到下一曲或者上一曲
+     * @param isNext 是否下一曲
+     */
+    public void findPreviousOrNext(Boolean isNext){
+
+        Log.i("Main","findPreviousOrNext");
+        //查询正在播放的歌曲信息
+        Integer type;
+        Integer position;
+        String id;
+
+        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+        if(cursor.moveToFirst()){
+
+            id = cursor.getString(cursor.getColumnIndex("id"));
+            position = cursor.getInt(cursor.getColumnIndex("position"));
+            type = cursor.getInt(cursor.getColumnIndex("type"));
+
+
+            if(type == 1){
+                //播放的是网络歌单的歌曲
+              Cursor onlineListCusor =  dbHelper.getWritableDatabase().query("online_playing_list",null,null,null,null,null,null);
+              onlineListCusor.moveToFirst();
+
+              do{
+                   Long itemId = onlineListCusor.getLong(onlineListCusor.getColumnIndex("id"));
+
+                   if(itemId.equals(Long.valueOf(id)) ){
+
+                       if(isNext){
+
+                           onlineListCusor.moveToNext();
+                           Long tId =  onlineListCusor.getLong(onlineListCusor.getColumnIndex("id"));
+                           String title = onlineListCusor.getString(onlineListCusor.getColumnIndex("name"));
+                           String authorName = onlineListCusor.getString(onlineListCusor.getColumnIndex("authorName"));
+                           String albumPicUrl = onlineListCusor.getString(onlineListCusor.getColumnIndex("albumPicUrl"));
+
+                           queryUrlAndPlay(tId,position,title,authorName,albumPicUrl);
+
+
+                       }else {
+
+                           onlineListCusor.moveToPrevious();
+                           Long tId =  onlineListCusor.getLong(onlineListCusor.getColumnIndex("id"));
+                           String title = onlineListCusor.getString(onlineListCusor.getColumnIndex("name"));
+                           String authorName = onlineListCusor.getString(onlineListCusor.getColumnIndex("authorName"));
+                           String albumPicUrl = onlineListCusor.getString(onlineListCusor.getColumnIndex("albumPicUrl"));
+
+                           queryUrlAndPlay(tId,position,title,authorName,albumPicUrl);
+                       }
+
+                       break;
+
+                   }
+
+                }while (onlineListCusor.moveToNext());
+
+
+
+            }else {
+                //播放的本地歌曲
+
+                Intent intent = new Intent(Constant.CHANGE_MUSIC_LOCAL);
+                intent.putExtra("type",isNext ? "next":"previous");
+                intent.putExtra("position",position);
+
+                broadcastManager.sendBroadcast(intent);
+            }
+
+
+        }
+
+
+    }
+
+
+    /**
+     * 查询网络歌单播放url
+     * @param songId 歌曲id
+     */
+    public void queryUrlAndPlay(final Long songId, final Integer position, final String title, final String authorName, final String albumPicUrl){
+        StringBuilder sb = new StringBuilder(Constant.HOST_URL);
+
+        sb.append("/song/url?id=");
+
+        OnlineListTask task = new OnlineListTask(new QueryResultListener() {
+            @Override
+            public void onSuccess(String result) {
+
+                try {
+                    JSONObject json = new JSONObject(result);
+                    JSONArray data = json.getJSONArray("data");
+                    JSONObject obj =  data.getJSONObject(0);
+                    String url = obj.getString("url");
+
+                    if(null != url){
+
+                        //保存当前播放歌曲信息
+                        ContentValues values = new ContentValues();
+                        values.put("id",songId);
+                        values.put("title",title);
+                        values.put("position",position);
+                        values.put("duration",0);
+                        values.put("uri",url);
+                        values.put("artist",authorName);
+                        values.put("albumArt",albumPicUrl);
+                        values.put("type",1);//type 1:网络歌单播放，0：本地音乐播放
+
+
+                        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
+                        if(cursor.getCount() > 0){
+                            dbHelper.getWritableDatabase().delete("playing",null,null);
+                        }
+
+                        //存储正在播放歌曲
+                        dbHelper.getWritableDatabase().insert("playing",null,values);
+
+
+                        //通知播放该url歌曲
+                        Intent intent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                        intent.putExtra("type",Constant.ONLINE_MUSIC_PLAY_ACTION);
+                        intent.putExtra("url",url);
+                        broadcastManager.sendBroadcast(intent);
+
+
+                    }else {
+                        Toast.makeText(MainActivity.this,"无法播放",Toast.LENGTH_SHORT).show();
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(String result) {
+
+            }
+        });
+
+
+        task.execute(sb.toString()+String.valueOf(songId));
+
+
     }
 
 

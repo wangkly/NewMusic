@@ -1,11 +1,15 @@
 package com.newmusic.wangkly.newmusic.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -17,6 +21,7 @@ import android.widget.TextView;
 import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.adapter.CircleViewAdapter;
 import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.fragments.CircleViewFragment;
 import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
@@ -57,12 +62,19 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
     public DBHelper dbHelper;
 
+
+    private LocalBroadcastManager broadcastManager ;
+
+    private RefreshSongInfoReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         setContentView(R.layout.activity_playing);
+
+        broadcastManager = LocalBroadcastManager.getInstance(PlayingActivity.this);
+
         dbHelper = new DBHelper(PlayingActivity.this);
 
         Intent intent = getIntent();
@@ -116,6 +128,14 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
         });
 
 
+        receiver = new RefreshSongInfoReceiver();
+
+        IntentFilter filter = new IntentFilter();
+
+        filter.addAction(Constant.PLAYING_ACTIVITY_REFRESH);
+
+        broadcastManager.registerReceiver(receiver,filter);
+
     }
 
 
@@ -141,7 +161,6 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
         //获取当前正在播放的歌曲信息
         initPlayingSongInfo();
-        initPlayStatus();
 
     }
 
@@ -150,34 +169,20 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
     public void initPlayingSongInfo(){
 
         String title="";
-        int duration =0;
-        int position =0;
-//        Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,"Idkey=?",new String[]{"1"},null,null,null);
         Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
 
         if(cursor.moveToFirst()){
 
-            do {
                 title = cursor.getString(cursor.getColumnIndex("title"));
-                duration = cursor.getInt(cursor.getColumnIndex("duration"));
-                position = cursor.getInt(cursor.getColumnIndex("position"));
-            } while (cursor.moveToNext());
-
         }
 
 
         mTitle.setText(title);
 
-        start.setText("00:00");
 
         seekBar.setMax(myBinder.getDuration());
 
         durationMax.setText(formatTime(myBinder.getDuration()));
-
-    }
-
-
-    public void initPlayStatus(){
 
         if(myBinder.isPlaying()){
             myBinder.UpdateSeekBarUi(handler);
@@ -220,6 +225,47 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
                 break;
 
 
+            case R.id.last:
+
+                Intent lastIntent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                lastIntent.putExtra("type",Constant.PLAY_PREVIOUS);
+
+                broadcastManager.sendBroadcast(lastIntent);
+
+                break;
+
+
+            case R.id.next:
+
+                Intent nextIntent = new Intent(Constant.MAIN_ACTIVITY_ACTION);
+                nextIntent.putExtra("type",Constant.PLAY_NEXT);
+
+                broadcastManager.sendBroadcast(nextIntent);
+
+
+                break;
+
+
+             default:
+
+
+                 break;
+
+
+
+        }
+    }
+
+
+    /**
+     * 注册监听 切换歌曲时刷新当前播放信息
+     */
+    class RefreshSongInfoReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            initPlayingSongInfo();
 
         }
     }
@@ -259,5 +305,14 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.bottom_silent,R.anim.bottom_out);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+
+        broadcastManager.unregisterReceiver(receiver);
+
+        super.onDestroy();
     }
 }

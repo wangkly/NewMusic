@@ -49,7 +49,7 @@ public class OnlinePlayListFragment extends Fragment {
 
     private OnlinePlayListAdapter mAdapter;
 
-
+//歌单列表点击后进入歌单详情页面
     View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {

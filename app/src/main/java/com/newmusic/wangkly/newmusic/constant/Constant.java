@@ -5,8 +5,10 @@ public class Constant {
 
     public static final String MAIN_ACTIVITY_ACTION ="mainActivityAction";
 
+    public static final String PLAYING_ACTIVITY_REFRESH ="playingActivityRefresh";
+
     //音乐服务host地址
-    public static final String HOST_URL = "http://172.19.8.16:3000";
+    public static final String HOST_URL = "http://192.168.1.104:3000";
 
     //播放网络歌单broadcast receiver action
     public static final String ONLINE_MUSIC_PLAY_ACTION = "com.newmusic.wangkly.newmusic.MainActivity.onlineMusic";
@@ -19,5 +21,11 @@ public class Constant {
 
     //网络音乐切换
     public static final String CHANGE_MUSIC_ONLINE ="change_music_online";
+
+    //播放下一曲
+    public static final String PLAY_NEXT = "play_next_song";
+
+    //播放上一曲
+    public static final String PLAY_PREVIOUS ="play_previous_song";
 
 }

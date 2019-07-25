@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -68,7 +69,7 @@ public class PlaylistDetailActivity extends AppCompatActivity {
     public MusicService.MyBinder myBinder;
 
 
-    public Toolbar detail_toolbar;
+    public CollapsingToolbarLayout detail_toolbar;
 
 
     public ImageView header_bg;
@@ -76,7 +77,7 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
     private long listId;
 
-
+    //歌单详情点击歌曲进行播放，将当前播放列表存储
     View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -110,12 +111,14 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
                             //保存当前播放歌曲信息
                             ContentValues values = new ContentValues();
+                            values.put("id",item.getId());
                             values.put("title",item.getName());
                             values.put("position",position);
                             values.put("duration",0);
                             values.put("uri",url);
                             values.put("artist",item.getAuthorName());
                             values.put("albumArt",item.getAlbumPicUrl());
+                            values.put("type",1);//type 1:网络歌单播放，0：本地音乐播放
 
 
                             Cursor cursor = dbHelper.getWritableDatabase().query("playing",null,null,null,null,null,null);
@@ -123,6 +126,7 @@ public class PlaylistDetailActivity extends AppCompatActivity {
                                 dbHelper.getWritableDatabase().delete("playing",null,null);
                             }
 
+                            //存储正在播放歌曲
                             dbHelper.getWritableDatabase().insert("playing",null,values);
 
 
@@ -183,6 +187,9 @@ public class PlaylistDetailActivity extends AppCompatActivity {
                info.put("listId",listId);
                dbHelper.getWritableDatabase().insert("playing_list_info",null,info);
 
+               //清空播放列表
+               dbHelper.getWritableDatabase().delete("online_playing_list",null,null);
+               //重新插入新的播放列表
                insertPlayingSong(mlist);
            }
 
@@ -386,12 +393,9 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
         if(cursor.moveToFirst()){
 
-            do {
-                title = cursor.getString(cursor.getColumnIndex("title"));
-                uri = cursor.getString(cursor.getColumnIndex("uri"));
-                albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
-
-            } while (cursor.moveToNext());
+            title = cursor.getString(cursor.getColumnIndex("title"));
+            uri = cursor.getString(cursor.getColumnIndex("uri"));
+            albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
 
         }
 

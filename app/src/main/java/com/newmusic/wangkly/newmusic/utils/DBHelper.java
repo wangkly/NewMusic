@@ -12,11 +12,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static int DB_VERSION = 1;
 
     //正在播放
-    public  static final String CREATE_PLAYING = "create table playing ( Idkey integer primary key autoincrement,id text,title text,position integer,duration integer,uri text,artist text,albumArt text)";
+    public  static final String CREATE_PLAYING = "create table playing ( Idkey integer primary key autoincrement,id text,title text,position integer,duration integer,uri text,artist text,albumArt text,type integer)";
 
     //网络歌单
     public static final String CREATE_ONLINE_LIST = "create table online_list( id integer primary key,name text,coverImgUrl text,description text , subscribedCount integer ) ";
-
+    //当前正在播放那个歌单的歌曲
     public static final String CREATE_PLAYING_LIST_INFO ="create table playing_list_info(id integer primary key autoincrement , listId integer)";
 
     //当前选择的网络播放列表

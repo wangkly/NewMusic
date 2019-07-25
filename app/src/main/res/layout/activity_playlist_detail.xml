@@ -18,10 +18,14 @@
             android:fitsSystemWindows="true">
 
             <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/detail_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
+                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed|snap"
+                app:collapsedTitleGravity="top"
+                app:collapsedTitleTextAppearance="@style/CToolbar_text"
+                app:expandedTitleTextAppearance="@style/EToolbar_text"
                 android:fitsSystemWindows="true">
 
                 <ImageView
@@ -35,14 +39,11 @@
 
 
                 <android.support.v7.widget.Toolbar
-                    android:id="@+id/detail_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
+                    android:layout_height="?android:attr/actionBarSize"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                    app:title="Title"
                     />
-
 
             </android.support.design.widget.CollapsingToolbarLayout>
 
@@ -62,14 +63,14 @@
 
     </android.support.design.widget.CoordinatorLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent">-->
 
-        <include layout="@layout/mini_play" />
+        <!--<include layout="@layout/mini_play" />-->
 
-    </LinearLayout>
+    <!--</LinearLayout>-->
 
 
 </android.support.constraint.ConstraintLayout>
