@@ -21,6 +21,8 @@ public class MusicService extends Service {
 
     private Timer timer;
 
+    private MyBinder myBinder = new MyBinder();
+
     public MusicService() {
 
     }
@@ -176,6 +178,6 @@ public class MusicService extends Service {
             }
         });
 
-        return new MyBinder();
+        return myBinder;
     }
 }

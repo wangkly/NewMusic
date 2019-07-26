@@ -1,13 +1,16 @@
 package com.newmusic.wangkly.newmusic.activities;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.IBinder;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -76,6 +79,21 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
 
     private long listId;
+
+
+    ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            myBinder = (MusicService.MyBinder) service;
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     //歌单详情点击歌曲进行播放，将当前播放列表存储
     View.OnClickListener clickListener = new View.OnClickListener() {
@@ -304,8 +322,6 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
         Bundle bundle =intent.getExtras();
 
-        myBinder= (MusicService.MyBinder) bundle.getBinder("myBinder");
-
         listId = bundle.getLong("listId",-1l);
 
         String cover = bundle.getString("cover");
@@ -345,7 +361,9 @@ public class PlaylistDetailActivity extends AppCompatActivity {
 
         localBroadcastManager.registerReceiver(receiver,filter);
 
-
+        //bind service 获取mybinder
+        Intent serviceIntent = new Intent(PlaylistDetailActivity.this,MusicService.class);
+        bindService(serviceIntent,connection,BIND_AUTO_CREATE);
 
 //        refreshPlayingInfo(false);
 

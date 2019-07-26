@@ -72,8 +72,6 @@ public class OnlinePlayListFragment extends Fragment {
 
             Bundle bundle = new Bundle();
 
-            bundle.putBinder("myBinder",((MainActivity)getActivity()).getMyBinder());
-
             bundle.putLong("listId",listId);
             bundle.putString("cover",cover);
             bundle.putString("name",name);

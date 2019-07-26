@@ -13,9 +13,6 @@ import com.newmusic.wangkly.newmusic.R;
 public class CircleViewFragment extends Fragment{
 
 
-    public CircleViewFragment() {
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

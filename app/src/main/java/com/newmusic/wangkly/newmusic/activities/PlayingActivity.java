@@ -1,17 +1,21 @@
 package com.newmusic.wangkly.newmusic.activities;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -20,15 +24,15 @@ import android.widget.TextView;
 
 import com.newmusic.wangkly.newmusic.R;
 import com.newmusic.wangkly.newmusic.adapter.CircleViewAdapter;
-import com.newmusic.wangkly.newmusic.beans.PlaylistItem;
+import com.newmusic.wangkly.newmusic.adapter.MyPagerAdapter;
 import com.newmusic.wangkly.newmusic.constant.Constant;
 import com.newmusic.wangkly.newmusic.fragments.CircleViewFragment;
 import com.newmusic.wangkly.newmusic.service.MusicService;
 import com.newmusic.wangkly.newmusic.utils.DBHelper;
-import com.newmusic.wangkly.newmusic.utils.MediaUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -67,6 +71,33 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
     private RefreshSongInfoReceiver receiver;
 
+
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            myBinder = (MusicService.MyBinder) service;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //获取当前正在播放的歌曲信息
+                    initPlayingSongInfo();
+                }
+            },1000);
+
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,11 +107,6 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
         broadcastManager = LocalBroadcastManager.getInstance(PlayingActivity.this);
 
         dbHelper = new DBHelper(PlayingActivity.this);
-
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-
-        myBinder= (MusicService.MyBinder) bundle.getBinder("myBinder");
 
 
         mTopTitleBar = findViewById(R.id.topTitleBar);
@@ -127,13 +153,14 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+        //bind 服务，获取myBinder
+        Intent serviceIntent = new Intent(PlayingActivity.this,MusicService.class);
+        bindService(serviceIntent,connection,BIND_AUTO_CREATE);
+
 
         receiver = new RefreshSongInfoReceiver();
-
         IntentFilter filter = new IntentFilter();
-
         filter.addAction(Constant.PLAYING_ACTIVITY_REFRESH);
-
         broadcastManager.registerReceiver(receiver,filter);
 
     }
@@ -143,24 +170,58 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
     private void initView() {
 
-        List<PlaylistItem> list = MediaUtil.getAudioList(PlayingActivity.this);
+//        final List<CircleViewFragment> fragments = new ArrayList<>();
+//
+//        CircleViewFragment fg1 = new CircleViewFragment();
+//        CircleViewFragment fg2 = new CircleViewFragment();
+//        CircleViewFragment fg3 = new CircleViewFragment();
 
-        List<CircleViewFragment> fragments = new ArrayList<>();
+//        fragments.addAll(Arrays.asList(fg3,fg1,fg2,fg3,fg1));
+//
+//        FragmentManager fm = getSupportFragmentManager();
+//
+//        CircleViewAdapter adapter = new CircleViewAdapter(fragments,fm);
 
 
-        for (int i = 0;i <list.size() ; i++){
+        final List<Integer> list = new ArrayList<>();
 
-            fragments.add(new CircleViewFragment());
-        }
+        list.add(R.drawable.b);
+        list.add(R.drawable.a);
+        list.add(R.drawable.music_img);
+        list.add(R.drawable.b);
+        list.add(R.drawable.a);
 
-        FragmentManager fm = getSupportFragmentManager();
+        MyPagerAdapter pagerAdapter = new MyPagerAdapter(this,list);
 
-        CircleViewAdapter adapter = new CircleViewAdapter(fragments,fm);
 
-        mViewPager.setAdapter(adapter);
+        mViewPager.setAdapter(pagerAdapter);
 
-        //获取当前正在播放的歌曲信息
-        initPlayingSongInfo();
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+            int currentPosition;
+
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+                Log.d("scrolled","");
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                currentPosition = i;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+                if(ViewPager.SCROLL_STATE_IDLE != state) return;
+                if(currentPosition == 0){
+                    mViewPager.setCurrentItem(list.size()- 2,false);
+                }else if(currentPosition == list.size() - 1){
+                    mViewPager.setCurrentItem(1,false);
+                }
+
+            }
+        });
 
     }
 
@@ -178,7 +239,6 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
 
         mTitle.setText(title);
-
 
         seekBar.setMax(myBinder.getDuration());
 
@@ -312,6 +372,10 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
     protected void onDestroy() {
 
         broadcastManager.unregisterReceiver(receiver);
+
+        if (connection != null) {
+            unbindService(connection);
+        }
 
         super.onDestroy();
     }

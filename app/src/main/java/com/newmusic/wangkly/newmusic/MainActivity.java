@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -32,7 +33,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -72,18 +72,17 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
+    private ViewPager viewPager;
 
-    ViewPager viewPager;
+    private Toolbar toolbar;
 
-    Toolbar toolbar;
+    private FragmentManager fragmentManager;
 
-    FragmentManager fragmentManager;
+    private MyFragmentPageAdapter fadapter;
 
-    MyFragmentPageAdapter fadapter;
+    private Boolean isfullScreenMode = false;//是否全屏播放
 
-    Boolean isfullScreenMode = false;//是否全屏播放
-
-    LinearLayout frame ;
+    private LinearLayout frame ;
 
     private List<String> titles;
 
@@ -99,10 +98,6 @@ public class MainActivity extends AppCompatActivity
 
 
     public MusicService.MyBinder myBinder;
-
-    public MusicService.MyBinder getMyBinder() {
-        return myBinder;
-    }
 
 
     public DBHelper dbHelper;
@@ -120,7 +115,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             myBinder = (MusicService.MyBinder) service;
-            refreshPlayingInfo(true);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    refreshPlayingInfo(true);
+
+                }
+            },1000);
         }
 
         @Override
@@ -276,8 +278,6 @@ public class MainActivity extends AppCompatActivity
 
                 Bundle bundle = new Bundle();
 
-                bundle.putBinder("myBinder",myBinder);
-
                 intent.putExtras(bundle);
 
                 startActivity(intent);
@@ -327,14 +327,13 @@ public class MainActivity extends AppCompatActivity
 
         if(cursor.moveToFirst()){
 
-        do {
-                title = cursor.getString(cursor.getColumnIndex("title"));
-                uri = cursor.getString(cursor.getColumnIndex("uri"));
-                albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
-
-            } while (cursor.moveToNext());
+            title = cursor.getString(cursor.getColumnIndex("title"));
+            uri = cursor.getString(cursor.getColumnIndex("uri"));
+            albumArt = cursor.getString(cursor.getColumnIndex("albumArt"));
 
         }
+
+        cursor.close();
 
 
         if(null != uri && !"".equals(uri)){
@@ -476,6 +475,10 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
 
         broadcastManager.unregisterReceiver(receiver);
+
+        if (connection != null) {
+            unbindService(connection);
+        }
 
         super.onDestroy();
     }
