@@ -195,7 +195,7 @@ public class PlayingActivity extends AppCompatActivity implements View.OnClickLi
 
 
         mViewPager.setAdapter(pagerAdapter);
-
+        mViewPager.setCurrentItem(0);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             int currentPosition;

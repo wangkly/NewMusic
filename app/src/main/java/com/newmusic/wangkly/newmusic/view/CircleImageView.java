@@ -54,6 +54,11 @@ public class CircleImageView extends AppCompatImageView {
     }
 
     @Override
+    public void setImageResource(int resId) {
+        super.setImageResource(resId);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         paint.setShader(initBitmapShader());//将着色器设置给画笔
         drawCircleBorder(canvas,0, Color.BLACK,radius);

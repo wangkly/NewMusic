@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.newmusic.wangkly.newmusic.R;
+import com.newmusic.wangkly.newmusic.view.CircleImageView;
 
 import java.util.List;
 
@@ -29,15 +30,22 @@ public class MyPagerAdapter extends PagerAdapter {
 
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object o) {
-        return false;
+        return view == o;
     }
 
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-       View view = View.inflate(mContext, R.layout.img_view,null);
+//       View view = View.inflate(mContext, R.layout.img_view,null);
+//
+//        ImageView img = view.findViewById(R.id.mImg);
+//
+//        img.setImageResource(list.get(position));
 
-        ImageView img = view.findViewById(R.id.mImg);
+
+        View view = View.inflate(mContext, R.layout.circle_view,null);
+
+        CircleImageView img = view.findViewById(R.id.albumImg);
 
         img.setImageResource(list.get(position));
 
